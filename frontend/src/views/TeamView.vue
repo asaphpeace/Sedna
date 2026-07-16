@@ -1,22 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { teamApi } from '@/api'
-import { useAppStore } from '@/stores/app'
 
-const app = useAppStore()
 const team = ref<any[]>([])
 
 onMounted(async () => {
   const { data } = await teamApi.list()
   team.value = data
 })
-
-const progMap = computed(() => Object.fromEntries(app.pathProgress.map(p => [p.role_id, p])))
-
-function pct(member: any) {
-  const entries = app.pathProgress.filter(() => true) // all path progress for org
-  return 0 // placeholder — real impl would fetch per-user progress
-}
 </script>
 
 <template>

@@ -12,6 +12,7 @@ from app.models.user import User
 from app.services.cert_award import check_and_award_cert
 from app.services.deps import current_user
 from app.services.gamification import award_xp, check_and_award_badges, update_streak
+from app.routers.webhooks import deliver_webhook
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 limiter = Limiter(key_func=get_remote_address)
@@ -155,6 +156,19 @@ async def submit_attempt(
             cert = await check_and_award_cert(db, user, body.tier_id)
 
     await db.commit()
+
+    if passed:
+        await deliver_webhook(db, user.org_id, "quiz.passed", {
+            "user_id": user.id, "module_id": body.module_id, "tier_id": body.tier_id, "score": score,
+        })
+        for slug in new_badges:
+            await deliver_webhook(db, user.org_id, "badge.earned", {
+                "user_id": user.id, "badge_slug": slug,
+            })
+        if cert is not None:
+            await deliver_webhook(db, user.org_id, "cert.earned", {
+                "user_id": user.id, "cert_id": cert.id,
+            })
 
     explanations = {
         qid: {

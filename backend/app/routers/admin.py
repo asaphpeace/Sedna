@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -174,10 +175,14 @@ async def delete_path(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(_require_admin),
 ):
-    result = await db.execute(select(LearningRole).where(LearningRole.id == path_id))
+    result = await db.execute(
+        select(LearningRole).where(LearningRole.id == path_id).options(selectinload(LearningRole.tiers))
+    )
     role = result.scalar_one_or_none()
     if not role:
         raise HTTPException(404, "Path not found")
+    if role.tiers:
+        raise HTTPException(400, "Delete all tiers in this path before deleting the path itself")
     await db.delete(role)
     await db.commit()
     return {"status": "deleted"}
@@ -248,10 +253,14 @@ async def delete_tier(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(_require_admin),
 ):
-    result = await db.execute(select(Tier).where(Tier.id == tier_id))
+    result = await db.execute(
+        select(Tier).where(Tier.id == tier_id).options(selectinload(Tier.modules))
+    )
     tier = result.scalar_one_or_none()
     if not tier:
         raise HTTPException(404, "Tier not found")
+    if tier.modules:
+        raise HTTPException(400, "Delete all modules in this tier before deleting the tier itself")
     await db.delete(tier)
     await db.commit()
     return {"status": "deleted"}
@@ -313,6 +322,10 @@ async def delete_module(
     mod = result.scalar_one_or_none()
     if not mod:
         raise HTTPException(404, "Module not found")
-    await db.delete(mod)
-    await db.commit()
+    try:
+        await db.delete(mod)
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(400, "Cannot delete: learners have progress or quiz attempts recorded against this module")
     return {"status": "deleted"}

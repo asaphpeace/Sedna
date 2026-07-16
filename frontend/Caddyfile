@@ -1,0 +1,16 @@
+{$DOMAIN} {
+	encode gzip
+
+	# Proxy /api/* to the backend container, stripping the /api prefix —
+	# mirrors the Vite dev proxy so the frontend code needs no changes.
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		root * /usr/share/caddy
+		try_files {path} /index.html
+		file_server
+	}
+}

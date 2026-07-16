@@ -3,9 +3,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import Organisation, User
 from app.schemas.user import UserOut, UserInvite, UserUpdate
 from app.services.deps import current_user, admin_user
+from app.services.email import send_invite_email
+from app.routers.webhooks import deliver_webhook
 
 router = APIRouter(prefix="/team", tags=["team"])
 
@@ -41,6 +43,15 @@ async def invite_user(
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+
+    org_result = await db.execute(select(Organisation).where(Organisation.id == admin.org_id))
+    org = org_result.scalar_one_or_none()
+    await send_invite_email(new_user.email, new_user.name, admin.name, org.name if org else "your team")
+
+    await deliver_webhook(db, admin.org_id, "user.invited", {
+        "user_id": new_user.id, "email": new_user.email, "invited_by": admin.id,
+    })
+
     return new_user
 
 

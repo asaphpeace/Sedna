@@ -1,0 +1,22 @@
+# Environment files — never commit real secrets
+.env
+.env.production
+backend/.env
+
+# Node
+frontend/node_modules/
+
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+
+# Editors / OS
+.DS_Store
+.vscode/
+
+# Dev journal (personal working log)
+.dev-journal.md
+
+# Backups
+sedna-backups/

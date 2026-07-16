@@ -164,11 +164,6 @@ function pathStatus(path: any) {
   return path.mod_count === 0 ? statusMock['Draft'] : statusMock['Published']
 }
 
-function timeAgo(idx: number) {
-  const opts = ['1 week ago','2 weeks ago','3 days ago','1 month ago','Yesterday','Today']
-  return opts[idx % opts.length]
-}
-
 const prodLabel: Record<string, string> = { vms: 'Dataloy VMS', stream: 'Sedna Stream', cross: 'Cross-product' }
 const typeLabel: Record<string, string> = { v: 'Video', a: 'Article', l: 'Link' }
 const typeIcon:  Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link' }
@@ -235,11 +230,11 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
         <table class="data-table">
           <thead>
             <tr>
-              <th>Path</th><th>Audience</th><th>Modules</th><th>Status</th><th>Last edited</th><th></th>
+              <th>Path</th><th>Audience</th><th>Modules</th><th>Status</th><th></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(p, i) in paths" :key="p.id" class="clickable-row" @click="openPath(p)">
+            <tr v-for="p in paths" :key="p.id" class="clickable-row" @click="openPath(p)">
               <td class="mod-title-cell">{{ p.name }}</td>
               <td><span class="audience-tag">{{ p.audience === 'internal' ? 'Internal' : 'Customer' }}</span></td>
               <td><span :class="['mod-count', p.mod_count > 0 ? 'has-mods' : '']">{{ p.mod_count }}</span></td>
@@ -248,12 +243,11 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
                   {{ pathStatus(p).label }}
                 </span>
               </td>
-              <td class="muted">{{ timeAgo(i) }}</td>
               <td class="actions-cell" @click.stop>
                 <button class="icon-btn" @click="deletePath(p.id)" title="Delete path"><i class="ti ti-trash" /></button>
               </td>
             </tr>
-            <tr v-if="!paths.length"><td colspan="6" class="empty-row">No paths yet. Click "New path" to get started.</td></tr>
+            <tr v-if="!paths.length"><td colspan="5" class="empty-row">No paths yet. Click "New path" to get started.</td></tr>
           </tbody>
         </table>
       </div>
