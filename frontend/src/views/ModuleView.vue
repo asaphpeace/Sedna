@@ -95,6 +95,19 @@ function moduleDoneState(mod: any) {
   return app.moduleProgress[mod.id]?.state === 'done'
 }
 
+// Convert any YouTube URL form (watch?v=, youtu.be, shorts, embed) to an embed URL
+const embedUrl = computed(() => {
+  const url: string | null = module.value?.video_url
+  if (!url) return null
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
+  )
+  if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0`
+  // Non-YouTube direct video URL — return as-is for the <video> tag
+  return url
+})
+const isYouTube = computed(() => !!embedUrl.value?.includes('youtube.com/embed/'))
+
 const CIRCLE_R = 22
 const CIRCLE_C = 2 * Math.PI * CIRCLE_R
 const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
@@ -111,8 +124,22 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
         <!-- LEFT: main content -->
         <div class="mod-main">
 
-          <!-- Video / article player -->
-          <div class="video-wrap">
+          <!-- Real embedded video (YouTube or direct file) -->
+          <div v-if="embedUrl" class="video-wrap video-wrap-real">
+            <iframe
+              v-if="isYouTube"
+              class="video-embed"
+              :src="embedUrl"
+              title="Module video"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            />
+            <video v-else class="video-embed" :src="embedUrl" controls />
+          </div>
+
+          <!-- Placeholder player (no video attached) -->
+          <div v-else class="video-wrap">
             <div class="video-inner">
               <div class="video-badge">
                 {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} ·
@@ -363,6 +390,8 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   background: #0F0A1A;
   margin-bottom: 0;
 }
+.video-wrap-real { border-radius: 12px; overflow: hidden; }
+.video-embed { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: #000; }
 .video-inner {
   position: relative;
   aspect-ratio: 16/9;

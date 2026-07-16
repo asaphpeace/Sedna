@@ -14,6 +14,9 @@ class ModuleOut(BaseModel):
     description: str
     learn_items: list[str]
     tier_id: int
+    video_url: Optional[str] = None
+    rich_content: Optional[str] = None
+    transcript: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

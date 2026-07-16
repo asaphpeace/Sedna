@@ -15,6 +15,7 @@ from app.services.deps import current_user
 from app.services.email import send_cert_email, send_near_cert_email
 from app.services.gamification import award_xp, check_and_award_badges, update_streak
 from app.services.notifications import notify_near_cert
+from app.routers.webhooks import deliver_webhook
 
 router = APIRouter(prefix="/progress", tags=["progress"])
 
@@ -169,7 +170,7 @@ async def complete_module(
 
             if cert:
                 cert_earned = True
-                cert_name = cert.tier.cert_name if hasattr(cert, "tier") and cert.tier else tier.cert_name
+                cert_name = tier.cert_name
                 cert_id = cert.id
                 await send_cert_email(user.email, user.name, tier.cert_name, cert.credential_number)
             else:
@@ -189,6 +190,20 @@ async def complete_module(
                     await send_near_cert_email(user.email, user.name, tier.cert_name, remaining)
 
     await db.commit()
+
+    if not already_done:
+        await deliver_webhook(db, user.org_id, "module.completed", {
+            "user_id": user.id, "module_id": module_id, "module_title": module.title,
+        })
+        for slug in new_badges:
+            await deliver_webhook(db, user.org_id, "badge.earned", {
+                "user_id": user.id, "badge_slug": slug,
+            })
+        if cert_earned:
+            await deliver_webhook(db, user.org_id, "cert.earned", {
+                "user_id": user.id, "cert_id": cert_id, "cert_name": cert_name,
+            })
+
     return {
         "status": "ok",
         "xp_awarded": xp_awarded,

@@ -67,6 +67,15 @@ async def send_near_cert_email(to: str, name: str, cert_name: str, modules_left:
     """)
 
 
+async def send_invite_email(to: str, name: str, inviter_name: str, org_name: str = "your team"):
+    await send_email(to, f"{inviter_name} invited you to Sedna Academy", f"""
+    <h2>You've been invited to Sedna Academy</h2>
+    <p>Hi {name.split()[0]},</p>
+    <p><strong>{inviter_name}</strong> has invited you to join {org_name} on Sedna Academy.</p>
+    <p><a href="{getattr(settings, 'app_url', 'http://localhost:5173')}/login">Sign in to get started →</a></p>
+    """)
+
+
 async def send_streak_reminder(to: str, name: str, streak_days: int):
     await send_email(to, f"Don't lose your {streak_days}-day streak!", f"""
     <h2>Keep your streak alive, {name.split()[0]}! 🔥</h2>
