@@ -138,3 +138,26 @@ async def tier_with_modules(db_session):
         select(Tier).where(Tier.id == tier.id).options(selectinload(Tier.modules))
     )
     return result.scalar_one()
+
+
+@pytest_asyncio.fixture
+async def tier_with_placeholder_modules(db_session):
+    """One learning role -> one tier -> two placeholder (not-yet-authored) modules.
+    Mirrors a freshly-imported course catalog before any content is written."""
+    role = LearningRole(name="Stub Path", description="", audience="customer", products=["vms"])
+    db_session.add(role)
+    await db_session.flush()
+
+    tier = Tier(role_id=role.id, label="Foundation", name="Stub Path Foundation", cert_name="Stub Path Foundation Cert")
+    db_session.add(tier)
+    await db_session.flush()
+
+    m1 = Module(tier_id=tier.id, title="P01 - Stub One", module_type="a", is_placeholder=True, sort_order=1)
+    m2 = Module(tier_id=tier.id, title="P02 - Stub Two", module_type="a", is_placeholder=True, sort_order=2)
+    db_session.add_all([m1, m2])
+    await db_session.commit()
+
+    result = await db_session.execute(
+        select(Tier).where(Tier.id == tier.id).options(selectinload(Tier.modules))
+    )
+    return result.scalar_one()

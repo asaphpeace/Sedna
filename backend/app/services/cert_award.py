@@ -25,8 +25,16 @@ async def check_and_award_cert(db: AsyncSession, user: User, tier_id: int) -> Ce
     if not tier or not tier.modules:
         return None
 
-    # Check all modules done
-    module_ids = [m.id for m in tier.modules if not m.is_placeholder]
+    # Check all modules done. Placeholder (not-yet-authored) modules are
+    # normally excluded so a tier isn't held hostage by unfinished content —
+    # but if EVERY module in the tier is still a placeholder, that exclusion
+    # would leave zero modules to require and certification would become
+    # permanently impossible. In that case, require all of them instead:
+    # completing everything currently available is the most a learner can
+    # do, and the moment real content is authored the tier naturally goes
+    # back to requiring only non-placeholder modules.
+    real_module_ids = [m.id for m in tier.modules if not m.is_placeholder]
+    module_ids = real_module_ids or [m.id for m in tier.modules]
     if not module_ids:
         return None
 
