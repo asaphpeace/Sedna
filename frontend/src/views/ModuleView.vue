@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { modulesApi, progressApi, savedApi, quizzesApi } from '@/api'
 import { useAppStore } from '@/stores/app'
 import ModuleComments from '@/components/ModuleComments.vue'
+
+marked.setOptions({ breaks: true, gfm: true })
 
 const route = useRoute()
 const router = useRouter()
@@ -131,11 +135,13 @@ const videoEmbed = computed(() => {
   return { kind: 'video' as const, src: url }
 })
 
-// Split plain/markdown-ish article text into paragraphs for display.
-const articleParagraphs = computed(() => {
+// Article content is authored as Markdown in the admin editor — render it
+// properly (headings, lists, bold/italic, links, code, quotes) rather than
+// dumping raw text into flat paragraphs, and sanitize before injecting.
+const articleHtml = computed(() => {
   const text = module.value?.rich_content
-  if (!text) return []
-  return text.split(/\n\s*\n/).map((p: string) => p.trim()).filter(Boolean)
+  if (!text) return ''
+  return DOMPurify.sanitize(marked.parse(text, { async: false }) as string)
 })
 
 const CIRCLE_R = 22
@@ -260,9 +266,11 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
               <p>{{ module.description }}</p>
             </div>
 
-            <div v-if="module.module_type === 'a' && articleParagraphs.length" class="article-body">
-              <p v-for="(para, i) in articleParagraphs" :key="i">{{ para }}</p>
-            </div>
+            <div
+              v-if="module.module_type === 'a' && articleHtml"
+              class="article-body"
+              v-html="articleHtml"
+            />
 
             <div v-if="module.learn_items?.length" class="learn-section">
               <h2 class="section-h">What you'll learn</h2>
@@ -499,10 +507,114 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   color: rgba(255,255,255,0.75);
 }
 
-/* ── Article body ─────────────────────────────────────── */
-.article-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.75; }
-.article-body p { margin-bottom: 16px; white-space: pre-wrap; }
-.article-body p:last-child { margin-bottom: 0; }
+/* ── Article body ──────────────────────────────────────────
+   Content is injected via v-html (rendered Markdown), so scoped styles
+   can't reach it directly — :deep() targets the injected elements. */
+.article-body {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.75;
+  max-width: 680px;
+}
+.article-body :deep(> *:first-child) { margin-top: 0; }
+.article-body :deep(> *:last-child) { margin-bottom: 0; }
+
+.article-body :deep(p) { margin: 0 0 16px; }
+
+.article-body :deep(h1),
+.article-body :deep(h2),
+.article-body :deep(h3) {
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+  margin: 32px 0 12px;
+  line-height: 1.3;
+}
+.article-body :deep(h1) { font-size: 22px; }
+.article-body :deep(h2) { font-size: 18px; }
+.article-body :deep(h3) { font-size: 15.5px; }
+
+.article-body :deep(ul),
+.article-body :deep(ol) {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.article-body :deep(li) { line-height: 1.6; }
+.article-body :deep(li > ul),
+.article-body :deep(li > ol) { margin: 6px 0 0; }
+
+.article-body :deep(strong) { font-weight: 700; color: var(--text-primary); }
+.article-body :deep(em) { font-style: italic; }
+
+.article-body :deep(a) {
+  color: var(--purple);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(110,43,240,0.35);
+}
+.article-body :deep(a:hover) { border-bottom-color: var(--purple); }
+
+.article-body :deep(blockquote) {
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--purple);
+  background: var(--purple-subtle);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+.article-body :deep(blockquote p) { margin-bottom: 0; }
+
+.article-body :deep(code) {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  background: var(--purple-subtle);
+  color: var(--purple);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+.article-body :deep(pre) {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  background: #1A1622;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+.article-body :deep(pre code) {
+  background: none;
+  color: #E8E3F5;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.article-body :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
+.article-body :deep(img) {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 8px 0 16px;
+}
+
+.article-body :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 16px;
+  font-size: 13.5px;
+}
+.article-body :deep(th),
+.article-body :deep(td) {
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+}
+.article-body :deep(th) { background: var(--surface); font-weight: 700; }
 
 /* ── Module header ────────────────────────────────────── */
 .mod-header { padding: 20px 28px 0; }
