@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -18,6 +18,11 @@ const tierModules = ref<any[]>([])
 const hasQuiz = ref(false)
 const activeTab = ref<'overview' | 'transcript' | 'resources' | 'notes'>('overview')
 
+// Opened from the admin Content panel's "Preview" button — renders the
+// module exactly as a learner would see it, but must not mutate the
+// viewer's own progress/history (they may be an admin, not the learner).
+const isPreview = computed(() => route.query.preview === '1')
+
 async function loadModule(id: number) {
   // Vue Router reuses this component instance when navigating between
   // /modules/:id routes, so this must run on every id change, not just on
@@ -25,11 +30,14 @@ async function loadModule(id: number) {
   // screen (video, title, completion state) stays frozen on the old module.
   module.value = null
   activeTab.value = 'overview'
+  justCompleted.value = false
 
   const { data } = await modulesApi.get(id)
   module.value = data
-  await progressApi.start(data.id)
-  await app.loadModuleProgress()
+  if (!isPreview.value) {
+    await progressApi.start(data.id)
+    await app.loadModuleProgress()
+  }
   await checkQuiz(id)
 
   if (data.tier_id) {
@@ -54,12 +62,14 @@ const prog = computed(() => app.moduleProgress[Number(route.params.id)])
 const isDone = computed(() => prog.value?.state === 'done')
 const savedIds = computed(() => new Set(app.saved.map((s: any) => s.module_id)))
 
-// Find the path progress for this module's path
+// Find the path progress for this module's path. The module response
+// carries its own role_id (stamped on by the backend from its tier) —
+// match that directly against app.pathProgress rather than searching
+// app.paths, which only holds summary counts (no nested tiers/modules).
 const pathProg = computed(() => {
   if (!module.value) return null
-  return app.pathProgress.find((p: any) =>
-    app.paths.find((r: any) => r.id === p.role_id)
-  ) ?? app.pathProgress[0] ?? null
+  return app.pathProgress.find((p: any) => p.role_id === module.value.role_id)
+    ?? app.pathProgress[0] ?? null
 })
 
 const pathName = computed(() => pathProg.value?.role_name ?? '')
@@ -82,11 +92,36 @@ async function checkQuiz(moduleId: number) {
   }
 }
 
+// The module immediately after the current one in this tier's list, or
+// null if the current module is the last one in the tier.
+const nextModule = computed(() => {
+  if (!module.value || !tierModules.value.length) return null
+  const idx = tierModules.value.findIndex((m: any) => m.id === module.value.id)
+  if (idx === -1 || idx === tierModules.value.length - 1) return null
+  return tierModules.value[idx + 1]
+})
+
+function goToNextModule() {
+  if (nextModule.value) router.push(`/modules/${nextModule.value.id}`)
+}
+
+const completing = ref(false)
+const justCompleted = ref(false)
+
 async function markDone() {
-  await progressApi.complete(Number(route.params.id))
-  await app.loadModuleProgress()
-  await app.loadPathProgress()
-  await app.loadGamification()
+  completing.value = true
+  try {
+    await progressApi.complete(Number(route.params.id))
+    await app.loadModuleProgress()
+    await app.loadPathProgress()
+    await app.loadGamification()
+    // Brief, deliberate pause before revealing "next lesson" — long enough
+    // to read as an acknowledgement, short enough not to feel like a wait.
+    await new Promise((r) => setTimeout(r, 1800))
+    justCompleted.value = true
+  } finally {
+    completing.value = false
+  }
 }
 
 async function toggleSave() {
@@ -106,17 +141,41 @@ const prodStyle: Record<string, { bg: string; fg: string }> = {
   cross:  { bg: '#E2F6EC', fg: '#0E9E6E' },
 }
 
+const TYPE_ICON: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
+const TYPE_LABEL: Record<string, string> = { v: 'Video', a: 'Article', l: 'Link', p: 'Podcast', s: 'Slides' }
+const TYPE_PILL_BG: Record<string, string> = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
+const TYPE_PILL_FG: Record<string, string> = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
+
 function moduleIcon(type: string) {
-  return type === 'v' ? 'ti-player-play' : 'ti-file-text'
+  return TYPE_ICON[type] ?? 'ti-file-text'
 }
 
 function moduleDoneState(mod: any) {
   return app.moduleProgress[mod.id]?.state === 'done'
 }
 
+// "Autoplay" — a toggle in the tier-list rail — controls both whether a
+// video starts playing as soon as its lesson opens, and whether finishing
+// a video auto-advances to the next lesson in the tier.
+const AUTOPLAY_STORAGE_KEY = 'sedna:autoplayEnabled'
+const autoplayEnabled = ref(localStorage.getItem(AUTOPLAY_STORAGE_KEY) !== 'false')
+watch(autoplayEnabled, (v) => localStorage.setItem(AUTOPLAY_STORAGE_KEY, String(v)))
+
 // Recognise YouTube and Google Drive share links and convert them to their
 // embeddable iframe form. Anything else is assumed to be a direct video file
 // URL and is handed straight to a <video> tag.
+//
+// Autoplay-on-open: YouTube gets autoplay=1 (browsers require mute=1 to
+// allow autoplay without a user gesture — a platform constraint, not a
+// choice; the player's own controls let the learner unmute). The <video>
+// tag mirrors this via the autoplay/muted attributes below. Google Drive's
+// /preview embed has no documented autoplay parameter, so Drive-hosted
+// videos may not reliably autoplay — a known limitation of that embed.
+//
+// Auto-advance-on-end: only possible for YouTube (via the IFrame Player
+// API, wired up in bindYouTubePlayer) and direct <video> files (native
+// `ended` event). Drive's embed exposes no playback-state API at all, so
+// auto-advance cannot work for Drive-hosted videos.
 const videoEmbed = computed(() => {
   const url: string | null = module.value?.video_url
   if (!url) return null
@@ -124,16 +183,71 @@ const videoEmbed = computed(() => {
   const yt = url.match(
     /(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
   )
-  if (yt) return { kind: 'iframe' as const, src: `https://www.youtube.com/embed/${yt[1]}?rel=0` }
+  if (yt) {
+    const params = new URLSearchParams({ rel: '0', enablejsapi: '1' })
+    if (autoplayEnabled.value) { params.set('autoplay', '1'); params.set('mute', '1') }
+    return { kind: 'iframe' as const, provider: 'youtube' as const, src: `https://www.youtube.com/embed/${yt[1]}?${params}` }
+  }
 
   // Handles /file/d/<id>/view, /open?id=<id>, and /uc?id=<id> share link forms.
   // Note: the file must be shared as "Anyone with the link can view" in Drive,
   // or this will embed an access-denied page instead of the video.
   const drive = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/)
-  if (drive) return { kind: 'iframe' as const, src: `https://drive.google.com/file/d/${drive[1]}/preview` }
+  if (drive) return { kind: 'iframe' as const, provider: 'drive' as const, src: `https://drive.google.com/file/d/${drive[1]}/preview` }
 
-  return { kind: 'video' as const, src: url }
+  return { kind: 'video' as const, provider: 'file' as const, src: url }
 })
+
+function onVideoEnded() {
+  if (autoplayEnabled.value) goToNextModule()
+}
+
+// ── YouTube IFrame Player API (auto-advance on end) ─────
+declare global {
+  interface Window {
+    YT: any
+    onYouTubeIframeAPIReady?: () => void
+  }
+}
+
+let ytPlayer: any = null
+let ytApiPromise: Promise<void> | null = null
+
+function loadYouTubeApi(): Promise<void> {
+  if (window.YT?.Player) return Promise.resolve()
+  if (ytApiPromise) return ytApiPromise
+  ytApiPromise = new Promise((resolve) => {
+    const prevCallback = window.onYouTubeIframeAPIReady
+    window.onYouTubeIframeAPIReady = () => { prevCallback?.(); resolve() }
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      document.head.appendChild(tag)
+    }
+  })
+  return ytApiPromise
+}
+
+async function bindYouTubePlayer() {
+  if (videoEmbed.value?.provider !== 'youtube') return
+  await loadYouTubeApi()
+  await nextTick()
+  const el = document.getElementById('yt-iframe')
+  if (!el) return
+  ytPlayer = new window.YT.Player('yt-iframe', {
+    events: {
+      onStateChange: (e: any) => {
+        if (e.data === window.YT.PlayerState.ENDED && autoplayEnabled.value) {
+          goToNextModule()
+        }
+      },
+    },
+  })
+}
+
+watch(videoEmbed, (v) => {
+  if (v?.provider === 'youtube') bindYouTubePlayer()
+}, { immediate: true })
 
 // Article content is authored as Markdown in the admin editor — render it
 // properly (headings, lists, bold/italic, links, code, quotes) rather than
@@ -154,17 +268,23 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
     <div v-if="!module" class="loading">Loading…</div>
 
     <template v-else>
+      <div v-if="isPreview" class="preview-banner">
+        <i class="ti ti-eye" /> Previewing as admin — this won't affect your own progress or history.
+      </div>
+
       <!-- Two-column layout -->
       <div class="mod-layout">
 
         <!-- LEFT: main content -->
         <div class="mod-main">
 
-          <template v-if="module.module_type !== 'a'">
+          <template v-if="module.module_type === 'v' || module.module_type === 'l'">
             <!-- Real embedded video (YouTube, Google Drive, or direct file) -->
             <div v-if="videoEmbed" class="video-wrap video-wrap-real">
               <iframe
                 v-if="videoEmbed.kind === 'iframe'"
+                :key="videoEmbed.src"
+                :id="videoEmbed.provider === 'youtube' ? 'yt-iframe' : undefined"
                 class="video-embed"
                 :src="videoEmbed.src"
                 title="Module video"
@@ -172,7 +292,17 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
               />
-              <video v-else class="video-embed" :src="videoEmbed.src" controls />
+              <video
+                v-else
+                :key="videoEmbed.src"
+                class="video-embed"
+                :src="videoEmbed.src"
+                :autoplay="autoplayEnabled"
+                :muted="autoplayEnabled"
+                playsinline
+                controls
+                @ended="onVideoEnded"
+              />
             </div>
 
             <!-- Placeholder player (no video attached) -->
@@ -210,6 +340,34 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             </div>
           </template>
 
+          <!-- Podcast -->
+          <div v-else-if="module.module_type === 'p'" class="video-wrap video-wrap-real podcast-wrap">
+            <div v-if="module.video_url" class="podcast-player">
+              <div class="podcast-icon"><i class="ti ti-microphone" /></div>
+              <audio class="podcast-audio" :src="module.video_url" :autoplay="autoplayEnabled" controls @ended="onVideoEnded" />
+            </div>
+            <div v-else class="video-inner">
+              <div class="video-badge">{{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · PODCAST</div>
+              <div class="video-play-btn"><i class="ti ti-microphone" /></div>
+            </div>
+          </div>
+
+          <!-- Slides -->
+          <div v-else-if="module.module_type === 's'" class="video-wrap video-wrap-real">
+            <iframe
+              v-if="module.video_url"
+              class="video-embed"
+              :src="module.video_url"
+              title="Module slides"
+              frameborder="0"
+              allowfullscreen
+            />
+            <div v-else class="video-inner">
+              <div class="video-badge">{{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · SLIDES</div>
+              <div class="video-play-btn"><i class="ti ti-presentation" /></div>
+            </div>
+          </div>
+
           <!-- Article banner (no video console for text content) -->
           <div v-else class="article-banner">
             <div class="article-banner-icon"><i class="ti ti-file-text" /></div>
@@ -222,23 +380,34 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           <div class="mod-header">
             <div class="mod-title-row">
               <h1 class="mod-title">{{ module.title }}</h1>
-              <div class="mod-actions">
+              <div v-if="!isPreview" class="mod-actions">
                 <button class="btn btn-ghost save-btn" @click="toggleSave">
                   <i :class="['ti', savedIds.has(Number(route.params.id)) ? 'ti-bookmark-filled' : 'ti-bookmark']" />
                   {{ savedIds.has(Number(route.params.id)) ? 'Saved' : 'Save' }}
                 </button>
-                <button v-if="!isDone" class="btn btn-primary" @click="markDone">
+                <button v-if="completing" class="btn btn-primary" disabled>
+                  <i class="ti ti-loader-2" style="animation: spin 0.8s linear infinite" /> Marking complete…
+                </button>
+                <button v-else-if="!isDone" class="btn btn-primary" @click="markDone">
                   <i class="ti ti-circle-check" /> Mark complete
                 </button>
-                <div v-else class="done-badge">
-                  <i class="ti ti-circle-check-filled" /> Completed
-                </div>
+                <template v-else>
+                  <div class="done-badge">
+                    <i class="ti ti-circle-check-filled" /> Completed
+                  </div>
+                  <button v-if="justCompleted && nextModule" class="btn btn-primary next-lesson-btn" @click="goToNextModule">
+                    Next lesson <i class="ti ti-arrow-right" />
+                  </button>
+                  <div v-else-if="justCompleted" class="tier-done-badge">
+                    <i class="ti ti-confetti" /> Tier complete
+                  </div>
+                </template>
               </div>
             </div>
             <div class="mod-meta-row">
-              <span class="pill" :style="{ background: module.module_type === 'v' ? '#F1EBFE' : '#FBF1E3', color: module.module_type === 'v' ? '#6E2BF0' : '#B26A00' }">
+              <span class="pill" :style="{ background: TYPE_PILL_BG[module.module_type] ?? '#FBF1E3', color: TYPE_PILL_FG[module.module_type] ?? '#B26A00' }">
                 <i :class="['ti', moduleIcon(module.module_type)]" />
-                {{ module.module_type === 'v' ? 'Video' : 'Article' }}
+                {{ TYPE_LABEL[module.module_type] ?? 'Article' }}
               </span>
               <span class="meta-sep">·</span>
               <span class="mod-dur"><i class="ti ti-clock" /> {{ module.duration_mins }} min</span>
@@ -298,9 +467,14 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           </div>
 
           <!-- Tab: Transcript -->
+          <div v-else-if="activeTab === 'transcript' && module.transcript" class="tab-content">
+            <div class="article-body">
+              <p v-for="(para, i) in module.transcript.split(/\n\s*\n/)" :key="i">{{ para }}</p>
+            </div>
+          </div>
           <div v-else-if="activeTab === 'transcript'" class="tab-content tab-empty">
             <i class="ti ti-file-text tab-empty-icon" />
-            <p>Transcript not available for this module.</p>
+            <p>No transcript has been added for this module yet.</p>
           </div>
 
           <!-- Tab: Resources -->
@@ -325,7 +499,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
         <aside class="mod-rail">
 
           <!-- Progress card -->
-          <div class="rail-progress-card">
+          <div v-if="!isPreview" class="rail-progress-card">
             <div class="rpc-blob" />
             <div class="rpc-inner">
               <div class="rpc-ring">
@@ -355,7 +529,15 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           <div class="rail-card">
             <div class="rail-card-head">
               <span class="rail-card-title">In this tier</span>
-              <span class="rail-autoplay"><i class="ti ti-player-track-next" /> Autoplay</span>
+              <button
+                type="button"
+                class="rail-autoplay"
+                :class="{ active: autoplayEnabled }"
+                @click="autoplayEnabled = !autoplayEnabled"
+                :title="autoplayEnabled ? 'Autoplay is on — click to turn off' : 'Autoplay is off — click to turn on'"
+              >
+                <i class="ti ti-player-track-next" /> Autoplay
+              </button>
             </div>
             <div class="tier-list">
               <div
@@ -409,6 +591,12 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 <style scoped>
 .page { padding: 0; max-width: 100%; background: var(--bg); }
 .loading { padding: 40px 32px; color: var(--text-muted); }
+.preview-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--purple-subtle); color: var(--purple);
+  font-size: 13px; font-weight: 600;
+  padding: 10px 28px;
+}
 
 /* ── Two-column layout ────────────────────────────────── */
 .mod-layout {
@@ -443,6 +631,18 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 }
 .video-wrap-real { border-radius: 12px; overflow: hidden; }
 .video-embed { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: #000; }
+.podcast-wrap.video-wrap-real { border-radius: 12px; }
+.podcast-player {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding: 40px 28px; background: linear-gradient(160deg, #1A0A3C 0%, #0F0A1A 60%);
+}
+.podcast-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: #fff;
+}
+.podcast-audio { width: 100%; max-width: 460px; }
 .video-inner {
   position: relative;
   aspect-ratio: 16/9;
@@ -623,6 +823,14 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .mod-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 .save-btn { font-size: 13px; }
 .done-badge { display: flex; align-items: center; gap: 5px; font-size: 13.5px; font-weight: 600; color: var(--green); }
+.next-lesson-btn { font-size: 13px; animation: fade-in-up 0.25s ease; }
+.tier-done-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12.5px; font-weight: 600; color: var(--purple);
+  animation: fade-in-up 0.25s ease;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .mod-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-muted); flex-wrap: wrap; }
 .meta-sep { color: var(--border-mid); }
 .mod-dur, .mod-tier-label { display: flex; align-items: center; gap: 4px; }
@@ -694,7 +902,13 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   padding: 14px 16px 10px;
 }
 .rail-card-title { font-size: 12.5px; font-weight: 700; }
-.rail-autoplay { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
+.rail-autoplay {
+  font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 3px 6px; border-radius: 6px;
+  transition: background 0.1s, color 0.1s;
+}
+.rail-autoplay:hover { background: var(--purple-subtle); }
+.rail-autoplay.active { color: var(--purple); font-weight: 600; }
 
 /* Tier list */
 .tier-list { display: flex; flex-direction: column; }

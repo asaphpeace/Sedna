@@ -33,10 +33,10 @@ async function toggleSave(m: any) {
   await app.loadSaved()
 }
 
-const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3' }
-const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00' }
-const typeLabel: Record<string, string>= { v: 'Video', a: 'Article' }
-const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text' }
+const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
+const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
+const typeLabel: Record<string, string>= { v: 'Video', a: 'Article', l: 'Link', p: 'Podcast', s: 'Slides' }
+const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const prodLabel: Record<string, string> = { vms: 'VMS', stream: 'Stream', cross: 'Cross' }
 const prodStyle: Record<string, { bg: string; fg: string }> = {
   vms:    { bg: '#F1EBFE', fg: '#6E2BF0' },
@@ -62,7 +62,7 @@ const prodStyle: Record<string, { bg: string; fg: string }> = {
         </button>
       </div>
       <div class="chip-group">
-        <button v-for="t in ['', 'v', 'a']" :key="t"
+        <button v-for="t in ['', 'v', 'a', 'l', 'p', 's']" :key="t"
           class="chip" :class="{ 'chip--active': typeFilter === t }" @click="typeFilter = t">
           {{ t === '' ? 'All types' : typeLabel[t] }}
         </button>

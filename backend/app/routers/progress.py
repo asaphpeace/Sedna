@@ -14,7 +14,7 @@ from app.services.cert_award import check_and_award_cert
 from app.services.deps import current_user
 from app.services.email import send_cert_email, send_near_cert_email
 from app.services.gamification import award_xp, check_and_award_badges, update_streak
-from app.services.notifications import notify_near_cert
+from app.services.notifications import create_notification, notify_near_cert
 from app.routers.webhooks import deliver_webhook
 
 router = APIRouter(prefix="/progress", tags=["progress"])
@@ -158,6 +158,14 @@ async def complete_module(
             target_type="module", target_id=module_id,
             target_label=module.title,
         ))
+
+        await create_notification(
+            db, user.id, type="module_complete",
+            title=f"Completed: {module.title}",
+            body="Nice work — keep going to unlock your next certificate.",
+            icon="ti-circle-check-filled", icon_color="#0E9E6E",
+            link=f"/modules/{module_id}",
+        )
 
         # Check cert eligibility for this tier
         tier_result = await db.execute(

@@ -31,6 +31,7 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     status: Optional[str] = None
     color: Optional[str] = None
+    is_admin: Optional[bool] = None
 
 
 class UserInvite(BaseModel):

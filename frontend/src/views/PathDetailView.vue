@@ -28,9 +28,9 @@ const tierStateMeta = (tier: any) => {
 
 const modState = (m: any) => app.moduleProgress[m.id]?.state ?? 'not_started'
 
-const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text' }
-const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3' }
-const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00' }
+const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
+const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
+const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
 const prodLabel: Record<string, string> = { vms: 'VMS', stream: 'Stream', cross: 'Cross' }
 const prodStyle: Record<string, { bg: string; fg: string }> = {
   vms:    { bg: '#F1EBFE', fg: '#6E2BF0' },

@@ -22,6 +22,27 @@ async function invite() {
   inviteName.value = ''
   inviteRole.value = ''
 }
+
+// ── Edit existing user ───────────────────────────────────
+const editingUser = ref<any>(null)
+const editForm = ref({ name: '', role: '', status: 'active', is_admin: false })
+
+function openEdit(u: any) {
+  editingUser.value = u
+  editForm.value = { name: u.name, role: u.role ?? '', status: u.status, is_admin: u.is_admin }
+}
+
+async function saveEdit() {
+  await teamApi.update(editingUser.value.id, {
+    name: editForm.value.name,
+    role: editForm.value.role || null,
+    status: editForm.value.status,
+    is_admin: editForm.value.is_admin,
+  })
+  const { data } = await teamApi.list()
+  users.value = data
+  editingUser.value = null
+}
 </script>
 
 <template>
@@ -68,6 +89,7 @@ async function invite() {
             <th>Paths</th>
             <th>Status</th>
             <th>Last active</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -76,7 +98,9 @@ async function invite() {
               <div class="member-cell">
                 <div class="avatar" :style="{ background: u.color, width: '32px', height: '32px', fontSize: '13px' }">{{ u.initial }}</div>
                 <div>
-                  <div class="member-name">{{ u.name }}</div>
+                  <div class="member-name">{{ u.name }}
+                    <span v-if="u.is_admin" class="admin-badge">Admin</span>
+                  </div>
                   <div class="member-email">{{ u.email }}</div>
                 </div>
               </div>
@@ -90,9 +114,45 @@ async function invite() {
               }">{{ u.status }}</span>
             </td>
             <td class="muted">{{ u.last_active_at ? new Date(u.last_active_at).toLocaleDateString() : '—' }}</td>
+            <td>
+              <button class="btn btn-ghost btn-sm" @click="openEdit(u)"><i class="ti ti-pencil" /> Edit</button>
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Edit user modal -->
+    <div v-if="editingUser" class="modal-overlay" @click.self="editingUser = null">
+      <div class="modal">
+        <h2 class="modal-title">Edit {{ editingUser.name }}</h2>
+        <div class="field">
+          <label class="label">Name</label>
+          <input v-model="editForm.name" class="input" placeholder="Full name" />
+        </div>
+        <div class="field">
+          <label class="label">Role</label>
+          <input v-model="editForm.role" class="input" placeholder="e.g. Voyage Operator" />
+        </div>
+        <div class="field">
+          <label class="label">Status</label>
+          <select v-model="editForm.status" class="input">
+            <option value="active">Active</option>
+            <option value="invited">Invited</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="editForm.is_admin" />
+            Admin — can manage content, users, and settings
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" @click="editingUser = null">Cancel</button>
+          <button class="btn btn-primary" :disabled="!editForm.name" @click="saveEdit">Save changes</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -122,4 +182,6 @@ tr:hover td { background: var(--purple-subtle); }
 .input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
 .input:focus { border-color: var(--purple); }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.admin-badge { font-size: 10px; font-weight: 700; color: var(--purple); background: var(--purple-subtle); padding: 2px 7px; border-radius: 100px; margin-left: 6px; vertical-align: middle; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
 </style>

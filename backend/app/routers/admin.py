@@ -11,6 +11,8 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.content import LearningRole, Module, Tier
+from app.models.quiz import QuizOption, QuizQuestion
+from app.models.release import Release
 from app.models.user import User
 from app.services.deps import current_user
 
@@ -95,6 +97,57 @@ class ModuleOut(BaseModel):
     video_url: Optional[str]
     transcript: Optional[str]
     rich_content: Optional[str]
+    model_config = {"from_attributes": True}
+
+
+class QuizOptionIn(BaseModel):
+    text: str
+    is_correct: bool = False
+
+
+class QuizQuestionIn(BaseModel):
+    question_text: str
+    explanation: str = ""
+    sort_order: int = 0
+    options: list[QuizOptionIn] = []
+
+
+class QuizOptionOut(BaseModel):
+    id: int
+    text: str
+    is_correct: bool
+    sort_order: int
+    model_config = {"from_attributes": True}
+
+
+class QuizQuestionOut(BaseModel):
+    id: int
+    module_id: Optional[int]
+    tier_id: Optional[int]
+    question_text: str
+    explanation: str
+    sort_order: int
+    options: list[QuizOptionOut]
+    model_config = {"from_attributes": True}
+
+
+class ReleaseIn(BaseModel):
+    product: str = "vms"          # vms | stream | academy
+    tag: str = ""
+    title: str
+    description: str = ""
+    published_at: Optional[datetime] = None
+    module_count: int = 0
+
+
+class ReleaseOut(BaseModel):
+    id: int
+    product: str
+    tag: str
+    title: str
+    description: str
+    published_at: datetime
+    module_count: int
     model_config = {"from_attributes": True}
 
 
@@ -328,4 +381,169 @@ async def delete_module(
     except IntegrityError:
         await db.rollback()
         raise HTTPException(400, "Cannot delete: learners have progress or quiz attempts recorded against this module")
+    return {"status": "deleted"}
+
+
+# ── Quiz authoring ───────────────────────────────────────────────────────────
+# Unlike the learner-facing endpoints in routers/quizzes.py (which strip
+# is_correct from every option), these expose the correct answer — an admin
+# needs to see and set it.
+
+def _validate_options(options: list[QuizOptionIn]) -> None:
+    if len(options) < 2:
+        raise HTTPException(400, "A question needs at least 2 options")
+    if sum(1 for o in options if o.is_correct) != 1:
+        raise HTTPException(400, "Exactly one option must be marked correct")
+
+
+@router.get("/modules/{module_id}/quiz", response_model=list[QuizQuestionOut])
+async def list_module_quiz(
+    module_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(
+        select(QuizQuestion)
+        .where(QuizQuestion.module_id == module_id)
+        .options(selectinload(QuizQuestion.options))
+        .order_by(QuizQuestion.sort_order)
+    )
+    return result.scalars().all()
+
+
+@router.post("/modules/{module_id}/quiz/questions", response_model=QuizQuestionOut)
+async def create_quiz_question(
+    module_id: int,
+    body: QuizQuestionIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    mod_result = await db.execute(select(Module).where(Module.id == module_id))
+    if not mod_result.scalar_one_or_none():
+        raise HTTPException(404, "Module not found")
+    _validate_options(body.options)
+
+    question = QuizQuestion(
+        module_id=module_id,
+        question_text=body.question_text,
+        explanation=body.explanation,
+        sort_order=body.sort_order,
+        options=[QuizOption(text=o.text, is_correct=o.is_correct, sort_order=i)
+                 for i, o in enumerate(body.options)],
+    )
+    db.add(question)
+    await db.commit()
+    result = await db.execute(
+        select(QuizQuestion).where(QuizQuestion.id == question.id).options(selectinload(QuizQuestion.options))
+    )
+    return result.scalar_one()
+
+
+@router.patch("/quiz-questions/{question_id}", response_model=QuizQuestionOut)
+async def update_quiz_question(
+    question_id: int,
+    body: QuizQuestionIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(
+        select(QuizQuestion).where(QuizQuestion.id == question_id).options(selectinload(QuizQuestion.options))
+    )
+    question = result.scalar_one_or_none()
+    if not question:
+        raise HTTPException(404, "Question not found")
+    _validate_options(body.options)
+
+    question.question_text = body.question_text
+    question.explanation = body.explanation
+    question.sort_order = body.sort_order
+    # Full replace of options — simplest correct behavior for a v1 editor
+    # (cascade="all, delete-orphan" on the relationship handles cleanup).
+    question.options = [QuizOption(text=o.text, is_correct=o.is_correct, sort_order=i)
+                         for i, o in enumerate(body.options)]
+    await db.commit()
+    result = await db.execute(
+        select(QuizQuestion).where(QuizQuestion.id == question_id).options(selectinload(QuizQuestion.options))
+    )
+    return result.scalar_one()
+
+
+@router.delete("/quiz-questions/{question_id}")
+async def delete_quiz_question(
+    question_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(select(QuizQuestion).where(QuizQuestion.id == question_id))
+    question = result.scalar_one_or_none()
+    if not question:
+        raise HTTPException(404, "Question not found")
+    try:
+        await db.delete(question)
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(400, "Cannot delete: learners have already attempted this question")
+    return {"status": "deleted"}
+
+
+# ── Releases ("What's New") ──────────────────────────────────────────────────
+
+@router.get("/releases", response_model=list[ReleaseOut])
+async def list_releases(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(select(Release).order_by(Release.published_at.desc()))
+    return result.scalars().all()
+
+
+@router.post("/releases", response_model=ReleaseOut)
+async def create_release(
+    body: ReleaseIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    data = body.model_dump()
+    if data["published_at"] is None:
+        data.pop("published_at")  # let the DB default (now) apply
+    release = Release(**data)
+    db.add(release)
+    await db.commit()
+    await db.refresh(release)
+    return release
+
+
+@router.patch("/releases/{release_id}", response_model=ReleaseOut)
+async def update_release(
+    release_id: int,
+    body: ReleaseIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(select(Release).where(Release.id == release_id))
+    release = result.scalar_one_or_none()
+    if not release:
+        raise HTTPException(404, "Release not found")
+    for k, v in body.model_dump().items():
+        if k == "published_at" and v is None:
+            continue
+        setattr(release, k, v)
+    await db.commit()
+    await db.refresh(release)
+    return release
+
+
+@router.delete("/releases/{release_id}")
+async def delete_release(
+    release_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    result = await db.execute(select(Release).where(Release.id == release_id))
+    release = result.scalar_one_or_none()
+    if not release:
+        raise HTTPException(404, "Release not found")
+    await db.delete(release)
+    await db.commit()
     return {"status": "deleted"}

@@ -30,6 +30,7 @@ const router = createRouter({
         { path: 'leaderboard', component: () => import('@/views/LeaderboardView.vue') },
         { path: 'stats', component: () => import('@/views/LearnerStatsView.vue') },
         { path: 'analytics', component: () => import('@/views/AnalyticsView.vue'), meta: { admin: true } },
+        { path: 'integrations', component: () => import('@/views/IntegrationsView.vue'), meta: { admin: true } },
       ],
     },
   ],

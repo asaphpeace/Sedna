@@ -14,6 +14,7 @@ class ModuleOut(BaseModel):
     description: str
     learn_items: list[str]
     tier_id: int
+    role_id: Optional[int] = None
     video_url: Optional[str] = None
     rich_content: Optional[str] = None
     transcript: Optional[str] = None

@@ -40,3 +40,31 @@ async def test_list_team_includes_invited_and_active(client, user, admin):
     emails = {u["email"] for u in resp.json()}
     assert user.email in emails
     assert admin.email in emails
+
+
+async def test_admin_can_edit_user_including_admin_flag(client, admin, user):
+    resp = await client.patch(f"/team/{user.id}", headers=auth_headers(admin), json={
+        "name": "Renamed User", "role": "Support Lead", "status": "active", "is_admin": True,
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["name"] == "Renamed User"
+    assert body["role"] == "Support Lead"
+    assert body["is_admin"] is True
+
+    listed = await client.get("/team", headers=auth_headers(admin))
+    updated = next(u for u in listed.json() if u["id"] == user.id)
+    assert updated["is_admin"] is True
+
+
+async def test_non_admin_cannot_edit_users(client, user, admin):
+    resp = await client.patch(f"/team/{admin.id}", headers=auth_headers(user), json={"name": "Hacked"})
+    assert resp.status_code == 403
+
+
+async def test_edit_user_partial_update_leaves_other_fields(client, admin, user):
+    resp = await client.patch(f"/team/{user.id}", headers=auth_headers(admin), json={"status": "inactive"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "inactive"
+    assert body["name"] == user.name  # untouched

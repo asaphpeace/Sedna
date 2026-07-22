@@ -58,3 +58,28 @@ async def test_path_progress_reflects_completion(client, user, tier_with_modules
     assert role["done_modules"] == 1
     assert role["total_modules"] == 2
     assert role["pct"] == 50
+
+
+async def test_completing_module_creates_notification(client, user, tier_with_modules):
+    headers = auth_headers(user)
+    m1 = tier_with_modules.modules[0]
+    await client.post(f"/progress/modules/{m1.id}/complete", headers=headers)
+
+    resp = await client.get("/notifications", headers=headers)
+    assert resp.status_code == 200
+    body = resp.json()
+    notif = next(n for n in body["notifications"] if n["type"] == "module_complete")
+    assert m1.title in notif["title"]
+    assert notif["link"] == f"/modules/{m1.id}"
+    assert notif["is_read"] is False
+
+
+async def test_completing_module_twice_does_not_duplicate_notification(client, user, tier_with_modules):
+    headers = auth_headers(user)
+    m1 = tier_with_modules.modules[0]
+    await client.post(f"/progress/modules/{m1.id}/complete", headers=headers)
+    await client.post(f"/progress/modules/{m1.id}/complete", headers=headers)
+
+    resp = await client.get("/notifications", headers=headers)
+    complete_notifs = [n for n in resp.json()["notifications"] if n["type"] == "module_complete"]
+    assert len(complete_notifs) == 1

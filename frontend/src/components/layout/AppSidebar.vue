@@ -27,9 +27,10 @@ const teamNav = [
 ]
 
 const adminNav = [
-  { to: '/users',     icon: 'ti-user-cog',     label: 'Users' },
-  { to: '/content',   icon: 'ti-layout-grid',  label: 'Content' },
-  { to: '/analytics', icon: 'ti-chart-bar',    label: 'Analytics' },
+  { to: '/users',        icon: 'ti-user-cog',     label: 'Users' },
+  { to: '/content',      icon: 'ti-layout-grid',  label: 'Content' },
+  { to: '/analytics',    icon: 'ti-chart-bar',    label: 'Analytics' },
+  { to: '/integrations', icon: 'ti-plug',         label: 'Integrations' },
 ]
 
 const active = (to: string) =>

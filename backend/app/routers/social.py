@@ -5,9 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.models.content import Module
 from app.models.social import CommentLike, ModuleComment
 from app.models.user import User
 from app.services.deps import current_user
+from app.routers.webhooks import deliver_webhook
 
 router = APIRouter(prefix="/social", tags=["social"])
 
@@ -77,6 +79,16 @@ async def create_comment(
     db.add(comment)
     await db.commit()
     await db.refresh(comment)
+
+    mod_result = await db.execute(select(Module).where(Module.id == module_id))
+    module = mod_result.scalar_one_or_none()
+    await deliver_webhook(db, user.org_id, "comment.posted", {
+        "user_id": user.id, "user_name": user.name,
+        "module_id": module_id, "module_title": module.title if module else None,
+        "comment_id": comment.id, "body": comment.body,
+        "is_reply": comment.parent_id is not None,
+    })
+
     return {"id": comment.id, "status": "ok"}
 
 

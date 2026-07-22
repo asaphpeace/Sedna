@@ -23,6 +23,7 @@ SUPPORTED_EVENTS = [
     "user.invited",
     "streak.milestone",
     "badge.earned",
+    "comment.posted",
 ]
 
 

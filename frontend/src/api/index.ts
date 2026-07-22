@@ -30,6 +30,16 @@ export const adminApi = {
   createModule: (tierId: number, body: any) => client.post(`/admin/tiers/${tierId}/modules`, body),
   updateModule: (moduleId: number, body: any) => client.patch(`/admin/modules/${moduleId}`, body),
   deleteModule: (moduleId: number) => client.delete(`/admin/modules/${moduleId}`),
+  // quiz
+  getModuleQuiz: (moduleId: number) => client.get(`/admin/modules/${moduleId}/quiz`),
+  createQuizQuestion: (moduleId: number, body: any) => client.post(`/admin/modules/${moduleId}/quiz/questions`, body),
+  updateQuizQuestion: (questionId: number, body: any) => client.patch(`/admin/quiz-questions/${questionId}`, body),
+  deleteQuizQuestion: (questionId: number) => client.delete(`/admin/quiz-questions/${questionId}`),
+  // releases
+  listReleases: () => client.get('/admin/releases'),
+  createRelease: (body: any) => client.post('/admin/releases', body),
+  updateRelease: (id: number, body: any) => client.patch(`/admin/releases/${id}`, body),
+  deleteRelease: (id: number) => client.delete(`/admin/releases/${id}`),
 }
 
 // ── Modules ───────────────────────────────────────────

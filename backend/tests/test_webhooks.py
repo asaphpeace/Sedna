@@ -83,3 +83,25 @@ async def test_webhook_not_fired_for_unsubscribed_event(client, admin, tier_with
         resp = await client.post(f"/progress/modules/{m1.id}/complete", headers=headers)
     assert resp.status_code == 200
     mock_post.assert_not_awaited()
+
+
+async def test_posting_comment_delivers_webhook(client, user, db_session, tier_with_modules):
+    """Confirms the Slack-integration path: posting a comment fires a comment.posted webhook."""
+    user.is_admin = True
+    db_session.add(user)
+    await db_session.commit()
+
+    headers = auth_headers(user)
+    create_resp = await client.post("/webhooks", headers=headers, json={
+        "url": "https://example.com/hook", "events": ["comment.posted"],
+    })
+    assert create_resp.status_code == 200, create_resp.text
+
+    m1 = tier_with_modules.modules[0]
+    mock_post, fake_post = _spy_post_only_for("https://example.com")
+    with patch("httpx.AsyncClient.post", new=fake_post):
+        resp = await client.post(f"/social/modules/{m1.id}/comments", headers=headers, json={
+            "body": "Great module, thanks!",
+        })
+    assert resp.status_code == 200, resp.text
+    mock_post.assert_awaited_once()
