@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { modulesApi, progressApi, savedApi, quizzesApi } from '@/api'
 import { useAppStore } from '@/stores/app'
@@ -14,13 +14,20 @@ const tierModules = ref<any[]>([])
 const hasQuiz = ref(false)
 const activeTab = ref<'overview' | 'transcript' | 'resources' | 'notes'>('overview')
 
-onMounted(async () => {
-  const { data } = await modulesApi.get(Number(route.params.id))
+async function loadModule(id: number) {
+  // Vue Router reuses this component instance when navigating between
+  // /modules/:id routes, so this must run on every id change, not just on
+  // mount — otherwise clicking another lesson updates the URL but the
+  // screen (video, title, completion state) stays frozen on the old module.
+  module.value = null
+  activeTab.value = 'overview'
+
+  const { data } = await modulesApi.get(id)
   module.value = data
   await progressApi.start(data.id)
   await app.loadModuleProgress()
-  await checkQuiz()
-  // Load sibling modules in the same tier
+  await checkQuiz(id)
+
   if (data.tier_id) {
     try {
       const res = await modulesApi.byTier(data.tier_id)
@@ -28,8 +35,16 @@ onMounted(async () => {
     } catch {
       tierModules.value = []
     }
+  } else {
+    tierModules.value = []
   }
-})
+}
+
+onMounted(() => loadModule(Number(route.params.id)))
+watch(
+  () => route.params.id,
+  (id) => { if (id) loadModule(Number(id)) }
+)
 
 const prog = computed(() => app.moduleProgress[Number(route.params.id)])
 const isDone = computed(() => prog.value?.state === 'done')
@@ -54,9 +69,9 @@ const nextCert = computed(() => {
   return earned < total ? `${pathName.value} Level ${earned + 1}` : 'All certs earned!'
 })
 
-async function checkQuiz() {
+async function checkQuiz(moduleId: number) {
   try {
-    const res = await quizzesApi.forModule(Number(route.params.id))
+    const res = await quizzesApi.forModule(moduleId)
     hasQuiz.value = res.data.length > 0
   } catch {
     hasQuiz.value = false
