@@ -95,18 +95,33 @@ function moduleDoneState(mod: any) {
   return app.moduleProgress[mod.id]?.state === 'done'
 }
 
-// Convert any YouTube URL form (watch?v=, youtu.be, shorts, embed) to an embed URL
-const embedUrl = computed(() => {
+// Recognise YouTube and Google Drive share links and convert them to their
+// embeddable iframe form. Anything else is assumed to be a direct video file
+// URL and is handed straight to a <video> tag.
+const videoEmbed = computed(() => {
   const url: string | null = module.value?.video_url
   if (!url) return null
-  const m = url.match(
+
+  const yt = url.match(
     /(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
   )
-  if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0`
-  // Non-YouTube direct video URL — return as-is for the <video> tag
-  return url
+  if (yt) return { kind: 'iframe' as const, src: `https://www.youtube.com/embed/${yt[1]}?rel=0` }
+
+  // Handles /file/d/<id>/view, /open?id=<id>, and /uc?id=<id> share link forms.
+  // Note: the file must be shared as "Anyone with the link can view" in Drive,
+  // or this will embed an access-denied page instead of the video.
+  const drive = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/)
+  if (drive) return { kind: 'iframe' as const, src: `https://drive.google.com/file/d/${drive[1]}/preview` }
+
+  return { kind: 'video' as const, src: url }
 })
-const isYouTube = computed(() => !!embedUrl.value?.includes('youtube.com/embed/'))
+
+// Split plain/markdown-ish article text into paragraphs for display.
+const articleParagraphs = computed(() => {
+  const text = module.value?.rich_content
+  if (!text) return []
+  return text.split(/\n\s*\n/).map((p: string) => p.trim()).filter(Boolean)
+})
 
 const CIRCLE_R = 22
 const CIRCLE_C = 2 * Math.PI * CIRCLE_R
@@ -124,52 +139,61 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
         <!-- LEFT: main content -->
         <div class="mod-main">
 
-          <!-- Real embedded video (YouTube or direct file) -->
-          <div v-if="embedUrl" class="video-wrap video-wrap-real">
-            <iframe
-              v-if="isYouTube"
-              class="video-embed"
-              :src="embedUrl"
-              title="Module video"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-            />
-            <video v-else class="video-embed" :src="embedUrl" controls />
-          </div>
-
-          <!-- Placeholder player (no video attached) -->
-          <div v-else class="video-wrap">
-            <div class="video-inner">
-              <div class="video-badge">
-                {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} ·
-                {{ module.module_type === 'v' ? 'VIDEO' : 'ARTICLE' }}
-              </div>
-              <div class="video-play-btn">
-                <i class="ti ti-player-play-filled" />
-              </div>
-              <div class="video-resume" v-if="prog?.pct_complete > 0 && prog?.pct_complete < 100">
-                Resume at {{ Math.floor((module.duration_mins * (prog.pct_complete / 100)) * 60 / 60) }}:{{ String(Math.floor((module.duration_mins * (prog.pct_complete / 100) % 1) * 60)).padStart(2,'0') }}
-              </div>
+          <template v-if="module.module_type !== 'a'">
+            <!-- Real embedded video (YouTube, Google Drive, or direct file) -->
+            <div v-if="videoEmbed" class="video-wrap video-wrap-real">
+              <iframe
+                v-if="videoEmbed.kind === 'iframe'"
+                class="video-embed"
+                :src="videoEmbed.src"
+                title="Module video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              />
+              <video v-else class="video-embed" :src="videoEmbed.src" controls />
             </div>
 
-            <!-- Fake progress bar -->
-            <div class="video-controls">
-              <div class="vc-left">
-                <button class="vc-btn" aria-label="Play"><i class="ti ti-player-play" /></button>
-                <button class="vc-btn" aria-label="Skip"><i class="ti ti-player-track-next" /></button>
-                <button class="vc-btn" aria-label="Volume"><i class="ti ti-volume" /></button>
-                <span class="vc-time">0:00 / {{ module.duration_mins }}:00</span>
+            <!-- Placeholder player (no video attached) -->
+            <div v-else class="video-wrap">
+              <div class="video-inner">
+                <div class="video-badge">
+                  {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · VIDEO
+                </div>
+                <div class="video-play-btn">
+                  <i class="ti ti-player-play-filled" />
+                </div>
+                <div class="video-resume" v-if="prog?.pct_complete > 0 && prog?.pct_complete < 100">
+                  Resume at {{ Math.floor((module.duration_mins * (prog.pct_complete / 100)) * 60 / 60) }}:{{ String(Math.floor((module.duration_mins * (prog.pct_complete / 100) % 1) * 60)).padStart(2,'0') }}
+                </div>
               </div>
-              <div class="vc-right">
-                <button class="vc-btn vc-speed">1.0x</button>
-                <button class="vc-btn" aria-label="Subtitles"><i class="ti ti-subtitles" /></button>
-                <button class="vc-btn" aria-label="Settings"><i class="ti ti-settings" /></button>
-                <button class="vc-btn" aria-label="Fullscreen"><i class="ti ti-maximize" /></button>
+
+              <!-- Fake progress bar -->
+              <div class="video-controls">
+                <div class="vc-left">
+                  <button class="vc-btn" aria-label="Play"><i class="ti ti-player-play" /></button>
+                  <button class="vc-btn" aria-label="Skip"><i class="ti ti-player-track-next" /></button>
+                  <button class="vc-btn" aria-label="Volume"><i class="ti ti-volume" /></button>
+                  <span class="vc-time">0:00 / {{ module.duration_mins }}:00</span>
+                </div>
+                <div class="vc-right">
+                  <button class="vc-btn vc-speed">1.0x</button>
+                  <button class="vc-btn" aria-label="Subtitles"><i class="ti ti-subtitles" /></button>
+                  <button class="vc-btn" aria-label="Settings"><i class="ti ti-settings" /></button>
+                  <button class="vc-btn" aria-label="Fullscreen"><i class="ti ti-maximize" /></button>
+                </div>
+              </div>
+              <div class="video-seekbar">
+                <div class="video-seekbar-fill" :style="{ width: (prog?.pct_complete ?? 0) + '%' }" />
               </div>
             </div>
-            <div class="video-seekbar">
-              <div class="video-seekbar-fill" :style="{ width: (prog?.pct_complete ?? 0) + '%' }" />
+          </template>
+
+          <!-- Article banner (no video console for text content) -->
+          <div v-else class="article-banner">
+            <div class="article-banner-icon"><i class="ti ti-file-text" /></div>
+            <div class="article-banner-label">
+              {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · ARTICLE
             </div>
           </div>
 
@@ -219,6 +243,10 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           <div v-if="activeTab === 'overview'" class="tab-content">
             <div v-if="module.description" class="mod-desc">
               <p>{{ module.description }}</p>
+            </div>
+
+            <div v-if="module.module_type === 'a' && articleParagraphs.length" class="article-body">
+              <p v-for="(para, i) in articleParagraphs" :key="i">{{ para }}</p>
             </div>
 
             <div v-if="module.learn_items?.length" class="learn-section">
@@ -435,6 +463,31 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .vc-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 .vc-speed { font-size: 12px; font-weight: 700; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 .vc-time { font-size: 12px; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; margin-left: 6px; }
+
+/* ── Article banner (replaces video console for text modules) ──────────── */
+.article-banner {
+  background: linear-gradient(160deg, #1A0A3C 0%, #0F0A1A 60%);
+  border-radius: 12px;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.article-banner-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #fff; flex-shrink: 0;
+}
+.article-banner-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.75);
+}
+
+/* ── Article body ─────────────────────────────────────── */
+.article-body { font-size: 14.5px; color: var(--text-primary); line-height: 1.75; }
+.article-body p { margin-bottom: 16px; white-space: pre-wrap; }
+.article-body p:last-child { margin-bottom: 0; }
 
 /* ── Module header ────────────────────────────────────── */
 .mod-header { padding: 20px 28px 0; }
