@@ -20,3 +20,6 @@ backend/.pytest_cache/
 
 # Backups
 sedna-backups/
+
+# Uploaded images (local-disk storage, dev)
+backend/uploads/

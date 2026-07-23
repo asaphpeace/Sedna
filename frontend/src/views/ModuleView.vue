@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -18,6 +18,14 @@ const module = ref<any>(null)
 const tierModules = ref<any[]>([])
 const hasQuiz = ref(false)
 const activeTab = ref<'overview' | 'transcript' | 'resources' | 'notes'>('overview')
+
+// Text/article modules drop the Transcript tab — there's nothing to
+// transcribe when the content already is text.
+const tabs = computed(() =>
+  module.value?.module_type === 'a'
+    ? (['overview', 'resources', 'notes'] as const)
+    : (['overview', 'transcript', 'resources', 'notes'] as const)
+)
 
 // Opened from the admin Content panel's "Preview" button — renders the
 // module exactly as a learner would see it, but must not mutate the
@@ -252,6 +260,111 @@ const articleHtml = computed(() => {
   return DOMPurify.sanitize(marked.parse(text, { async: false }) as string)
 })
 
+// ── Reading progress bar (articles only) ────────────────
+const readingPct = ref(0)
+let scrollEl: HTMLElement | null = null
+
+function onScroll() {
+  if (!scrollEl) return
+  const max = scrollEl.scrollHeight - scrollEl.clientHeight
+  readingPct.value = max > 0 ? Math.min(100, Math.max(0, (scrollEl.scrollTop / max) * 100)) : 0
+}
+
+onMounted(() => {
+  scrollEl = document.querySelector('.main')
+  scrollEl?.addEventListener('scroll', onScroll)
+})
+onUnmounted(() => {
+  scrollEl?.removeEventListener('scroll', onScroll)
+  headingObserver?.disconnect()
+})
+
+// ── TOC + admonition callouts ────────────────────────────
+// Post-process the rendered article DOM rather than hooking into marked's
+// renderer API (version-fragile) — assign heading ids, collect a TOC, and
+// turn `> [!TIP]` / `> [!WARNING]` blockquotes into styled callout boxes.
+const articleBodyEl = ref<HTMLElement | null>(null)
+const toc = ref<{ id: string; text: string; level: number }[]>([])
+const activeHeadingId = ref('')
+let headingObserver: IntersectionObserver | null = null
+
+const ADMONITION_META: Record<string, { label: string; icon: string }> = {
+  TIP: { label: 'Good to know', icon: 'ti-bulb' },
+  WARNING: { label: 'Watch out for this', icon: 'ti-alert-triangle' },
+  NOTE: { label: 'Note', icon: 'ti-info-circle' },
+}
+
+function slugify(text: string, seen: Set<string>): string {
+  let base = text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'section'
+  let slug = base
+  let i = 2
+  while (seen.has(slug)) { slug = `${base}-${i++}` }
+  seen.add(slug)
+  return slug
+}
+
+function processArticleBody() {
+  headingObserver?.disconnect()
+  toc.value = []
+  activeHeadingId.value = ''
+
+  const el = articleBodyEl.value
+  if (!el) return
+
+  // Headings → TOC
+  const seen = new Set<string>()
+  const headings = Array.from(el.querySelectorAll('h2, h3')) as HTMLElement[]
+  const entries: { id: string; text: string; level: number }[] = []
+  for (const h of headings) {
+    const text = h.textContent?.trim() ?? ''
+    if (!h.id) h.id = slugify(text, seen)
+    else seen.add(h.id)
+    entries.push({ id: h.id, text, level: h.tagName === 'H2' ? 2 : 3 })
+  }
+  toc.value = entries
+
+  if (headings.length) {
+    headingObserver = new IntersectionObserver(
+      (observed) => {
+        const visible = observed.filter((o) => o.isIntersecting)
+        if (visible.length) activeHeadingId.value = visible[0].target.id
+      },
+      { rootMargin: '-64px 0px -70% 0px' }
+    )
+    headings.forEach((h) => headingObserver!.observe(h))
+  }
+
+  // GitHub-style admonitions: a blockquote whose first line is [!TIP] etc.
+  const blockquotes = Array.from(el.querySelectorAll('blockquote')) as HTMLElement[]
+  for (const bq of blockquotes) {
+    const firstP = bq.querySelector('p')
+    const match = firstP?.textContent?.trim().match(/^\[!(TIP|WARNING|NOTE)\]\s*(.*)$/)
+    if (!match) continue
+    const meta = ADMONITION_META[match[1]]
+    const remainder = match[2]
+
+    if (remainder) {
+      firstP!.textContent = remainder
+    } else if (firstP) {
+      firstP.remove()
+    }
+
+    const callout = document.createElement('div')
+    callout.className = `callout callout-${match[1].toLowerCase()}`
+    callout.innerHTML = `<div class="callout-head"><i class="ti ${meta.icon}"></i> ${meta.label}</div>`
+    while (bq.firstChild) callout.appendChild(bq.firstChild)
+    bq.replaceWith(callout)
+  }
+}
+
+watch(articleHtml, () => {
+  nextTick(processArticleBody)
+})
+
+function scrollToHeading(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 const CIRCLE_R = 22
 const CIRCLE_C = 2 * Math.PI * CIRCLE_R
 const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
@@ -362,11 +475,13 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             </div>
           </div>
 
-          <!-- Article banner (no video console for text content) -->
-          <div v-else class="article-banner">
-            <div class="article-banner-icon"><i class="ti ti-file-text" /></div>
-            <div class="article-banner-label">
-              {{ productLabel(module.product).toUpperCase() }} · ARTICLE
+          <!-- Article header (reading-focused chrome, no video console) -->
+          <div v-else class="article-header">
+            <div class="article-eyebrow">
+              {{ productLabel(module.product).toUpperCase() }} · ARTICLE · {{ module.duration_mins }} min read
+            </div>
+            <div class="article-progress-track">
+              <div class="article-progress-fill" :style="{ width: readingPct + '%' }" />
             </div>
           </div>
 
@@ -413,7 +528,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           <!-- Tabs -->
           <div class="mod-tabs">
             <button
-              v-for="tab in ['overview','transcript','resources','notes'] as const"
+              v-for="tab in tabs"
               :key="tab"
               class="tab-btn"
               :class="{ active: activeTab === tab }"
@@ -431,6 +546,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
             <div
               v-if="module.module_type === 'a' && articleHtml"
+              ref="articleBodyEl"
               class="article-body"
               v-html="articleHtml"
             />
@@ -576,6 +692,25 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             </div>
           </div>
 
+          <!-- On this page (article TOC) -->
+          <div class="rail-card" v-if="toc.length">
+            <div class="rail-card-head">
+              <span class="rail-card-title">On this page</span>
+            </div>
+            <div class="toc-list">
+              <button
+                v-for="h in toc"
+                :key="h.id"
+                type="button"
+                class="toc-item"
+                :class="{ 'toc-h3': h.level === 3, active: activeHeadingId === h.id }"
+                @click="scrollToHeading(h.id)"
+              >
+                {{ h.text }}
+              </button>
+            </div>
+          </div>
+
         </aside><!-- /mod-rail -->
       </div><!-- /mod-layout -->
     </template>
@@ -681,24 +816,19 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .vc-speed { font-size: 12px; font-weight: 700; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 .vc-time { font-size: 12px; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; margin-left: 6px; }
 
-/* ── Article banner (replaces video console for text modules) ──────────── */
-.article-banner {
-  background: linear-gradient(160deg, #1A0A3C 0%, #0F0A1A 60%);
-  border-radius: 12px;
-  padding: 28px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.article-banner-icon {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(255,255,255,0.14);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #fff; flex-shrink: 0;
-}
-.article-banner-label {
+/* ── Article header (replaces video console for text modules) ──────────── */
+.article-header { padding: 20px 28px 0; }
+.article-eyebrow {
   font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
-  color: rgba(255,255,255,0.75);
+  color: var(--purple);
+}
+.article-progress-track {
+  height: 3px; border-radius: 100px; background: var(--border);
+  margin-top: 10px; overflow: hidden;
+}
+.article-progress-fill {
+  height: 100%; background: var(--purple);
+  transition: width 0.1s linear;
 }
 
 /* ── Article body ──────────────────────────────────────────
@@ -740,6 +870,29 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .article-body :deep(li > ul),
 .article-body :deep(li > ol) { margin: 6px 0 0; }
 
+/* Numbered steps get circular badges instead of default markers */
+.article-body :deep(ol) {
+  list-style: none;
+  counter-reset: step-badge;
+  padding-left: 0;
+}
+.article-body :deep(ol > li) {
+  counter-increment: step-badge;
+  position: relative;
+  padding-left: 34px;
+}
+.article-body :deep(ol > li::before) {
+  content: counter(step-badge);
+  position: absolute;
+  left: 0; top: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--purple-subtle);
+  color: var(--purple);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
 .article-body :deep(strong) { font-weight: 700; color: var(--text-primary); }
 .article-body :deep(em) { font-style: italic; }
 
@@ -760,6 +913,39 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   color: var(--text-secondary);
 }
 .article-body :deep(blockquote p) { margin-bottom: 0; }
+
+.article-body :deep(.callout) {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.article-body :deep(.callout p) { margin: 0; }
+.article-body :deep(.callout-head) {
+  display: flex; align-items: center; gap: 7px;
+  font-weight: 700; font-size: 13px;
+  margin-bottom: 6px;
+}
+.article-body :deep(.callout-tip) {
+  background: var(--purple-subtle);
+  border-color: rgba(110,43,240,0.2);
+  color: var(--text-secondary);
+}
+.article-body :deep(.callout-tip .callout-head) { color: var(--purple); }
+.article-body :deep(.callout-warning) {
+  background: #FBF1E3;
+  border-color: rgba(178,106,0,0.25);
+  color: var(--text-secondary);
+}
+.article-body :deep(.callout-warning .callout-head) { color: #B26A00; }
+.article-body :deep(.callout-note) {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+.article-body :deep(.callout-note .callout-head) { color: var(--text-primary); }
 
 .article-body :deep(code) {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -935,6 +1121,19 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .chapter-label { flex: 1; font-size: 12.5px; color: var(--text-secondary); line-height: 1.35; }
 .chapter-active { color: var(--text-primary); font-weight: 600; }
 .chapter-time { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ── TOC (article "On this page") ────────────────────────── */
+.toc-list { display: flex; flex-direction: column; padding: 4px 8px 10px; gap: 1px; }
+.toc-item {
+  text-align: left; background: none; border: none; cursor: pointer;
+  padding: 6px 8px; border-radius: 8px;
+  font-size: 12.5px; color: var(--text-muted); line-height: 1.4;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+.toc-item:hover { background: #FBFAFC; color: var(--text-secondary); }
+.toc-item.toc-h3 { padding-left: 20px; font-size: 12px; }
+.toc-item.active { color: var(--purple); font-weight: 600; border-left-color: var(--purple); background: var(--purple-subtle); }
 
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 900px) {

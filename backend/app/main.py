@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -24,6 +25,7 @@ from app.routers import (
     settings as settings_router,
     social,
     team,
+    uploads,
     webhooks,
 )
 
@@ -59,6 +61,9 @@ app.include_router(analytics.router)
 app.include_router(social.router)
 app.include_router(compliance.router)
 app.include_router(webhooks.router)
+app.include_router(uploads.router)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")

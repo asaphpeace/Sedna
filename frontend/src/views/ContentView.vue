@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue'
-import { adminApi } from '@/api'
+import { adminApi, uploadsApi } from '@/api'
 import { PRODUCT_META, PRODUCT_ORDER, productLabel } from '@/constants/products'
 
 // ── State ──────────────────────────────────────────────
@@ -217,26 +217,55 @@ const richContentTextarea = ref<HTMLTextAreaElement | null>(null)
 const showImagePopover = ref(false)
 const imageUrlDraft = ref('')
 const imageAltDraft = ref('')
+const imageUploading = ref(false)
+const imageUploadError = ref('')
+
+function insertAtCursor(text: string) {
+  const ta = richContentTextarea.value
+  const full = moduleForm.value.rich_content
+  const start = ta?.selectionStart ?? full.length
+  const end = ta?.selectionEnd ?? start
+  moduleForm.value.rich_content = full.slice(0, start) + text + full.slice(end)
+
+  nextTick(() => {
+    ta?.focus()
+    const pos = start + text.length
+    ta?.setSelectionRange(pos, pos)
+  })
+}
 
 function insertImageMarkdown() {
   const url = imageUrlDraft.value.trim()
   if (!url) return
-  const md = `![${imageAltDraft.value.trim()}](${url})`
-  const ta = richContentTextarea.value
-  const text = moduleForm.value.rich_content
-  const start = ta?.selectionStart ?? text.length
-  const end = ta?.selectionEnd ?? start
-  moduleForm.value.rich_content = text.slice(0, start) + md + text.slice(end)
+  insertAtCursor(`![${imageAltDraft.value.trim()}](${url})`)
 
   imageUrlDraft.value = ''
   imageAltDraft.value = ''
   showImagePopover.value = false
+}
 
-  nextTick(() => {
-    ta?.focus()
-    const pos = start + md.length
-    ta?.setSelectionRange(pos, pos)
-  })
+async function uploadAndInsertImage(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  imageUploading.value = true
+  imageUploadError.value = ''
+  try {
+    const { data } = await uploadsApi.uploadImage(file)
+    insertAtCursor(`![${imageAltDraft.value.trim()}](${data.url})`)
+    imageAltDraft.value = ''
+    showImagePopover.value = false
+  } catch (err: any) {
+    imageUploadError.value = err?.response?.data?.detail || 'Upload failed'
+  } finally {
+    imageUploading.value = false
+    input.value = ''
+  }
+}
+
+function insertCallout(type: 'TIP' | 'WARNING') {
+  insertAtCursor(`\n> [!${type}]\n> \n`)
 }
 
 async function saveModule() {
@@ -746,14 +775,31 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
           <template v-if="moduleForm.module_type === 'a'">
             <div class="field-label-row">
               <label class="field-label">Article content</label>
-              <button type="button" class="link-btn" @click="showImagePopover = !showImagePopover">
-                <i class="ti ti-photo-plus" /> Insert image
-              </button>
+              <div class="field-label-actions">
+                <button type="button" class="link-btn" @click="insertCallout('TIP')">
+                  <i class="ti ti-bulb" /> Tip callout
+                </button>
+                <button type="button" class="link-btn" @click="insertCallout('WARNING')">
+                  <i class="ti ti-alert-triangle" /> Warning callout
+                </button>
+                <button type="button" class="link-btn" @click="showImagePopover = !showImagePopover">
+                  <i class="ti ti-photo-plus" /> Insert image
+                </button>
+              </div>
             </div>
             <div v-if="showImagePopover" class="image-popover">
-              <input v-model="imageUrlDraft" class="field-input" placeholder="Image URL (https://...)" />
               <input v-model="imageAltDraft" class="field-input" placeholder="Alt text (optional)" />
-              <button type="button" class="btn btn-primary btn-sm" @click="insertImageMarkdown">Insert</button>
+              <div class="image-popover-row">
+                <input v-model="imageUrlDraft" class="field-input" placeholder="Image URL (https://...)" />
+                <button type="button" class="btn btn-primary btn-sm" @click="insertImageMarkdown">Insert URL</button>
+              </div>
+              <div class="image-popover-row">
+                <label class="btn btn-ghost btn-sm upload-btn">
+                  <i class="ti ti-upload" /> {{ imageUploading ? 'Uploading…' : 'Upload image' }}
+                  <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none" :disabled="imageUploading" @change="uploadAndInsertImage" />
+                </label>
+              </div>
+              <p v-if="imageUploadError" class="field-error">{{ imageUploadError }}</p>
             </div>
             <textarea
               ref="richContentTextarea"
@@ -988,12 +1034,17 @@ tr:last-child td { border-bottom: none; }
 .field-hint { font-weight: 400; color: var(--text-muted); }
 .field-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .field-label-row .field-label { margin-bottom: 0; }
+.field-label-actions { display: flex; align-items: center; gap: 14px; }
 .image-popover {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; flex-direction: column; gap: 8px;
   padding: 10px; margin-bottom: 8px;
   background: var(--purple-subtle); border-radius: 8px;
 }
 .image-popover .field-input { margin: 0; }
+.image-popover-row { display: flex; align-items: center; gap: 8px; }
+.image-popover-row .field-input { flex: 1; }
+.upload-btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.field-error { font-size: 12px; color: var(--red, #d32f2f); margin: 0; }
 .field-input {
   width: 100%; padding: 8px 11px; border: 1px solid var(--border);
   border-radius: 8px; font-size: 13.5px; font-family: inherit;
