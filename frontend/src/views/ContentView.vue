@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { adminApi } from '@/api'
+import { PRODUCT_META, PRODUCT_ORDER, productLabel } from '@/constants/products'
 
 // ── State ──────────────────────────────────────────────
 const tab = ref<'modules' | 'paths' | 'releases'>('paths')
@@ -28,7 +29,7 @@ const editingRelease = ref<any>(null)
 const releaseForm = ref({ title: '', description: '', product: 'vms', tag: '' })
 
 // Forms
-const pathForm = ref({ name: '', description: '', audience: 'customer', icon: 'ti-user', color: 'purple', products: [] as string[], sort_order: 0 })
+const pathForm = ref({ name: '', description: '', audience: 'customer', icon: 'ti-user', color: 'purple', products: ['vms'] as string[], sort_order: 0 })
 const tierForm = ref({ label: 'Foundation', name: '', cert_name: '', sort_order: 0 })
 const moduleForm = ref({
   title: '', module_type: 'v', duration_mins: 0, product: 'vms',
@@ -139,7 +140,7 @@ async function openPath(path: any) {
 
 // ── Path CRUD ──────────────────────────────────────────
 function openNewPath() {
-  pathForm.value = { name: '', description: '', audience: 'customer', icon: 'ti-user', color: 'purple', products: [], sort_order: paths.value.length }
+  pathForm.value = { name: '', description: '', audience: 'customer', icon: 'ti-user', color: 'purple', products: ['vms'], sort_order: paths.value.length }
   showNewPath.value = true
 }
 
@@ -413,7 +414,9 @@ function pathStatus(path: any) {
   return path.mod_count === 0 ? statusMock['Draft'] : statusMock['Published']
 }
 
-const prodLabel: Record<string, string> = { vms: 'Dataloy VMS', stream: 'Sedna Stream', cross: 'Cross-product', academy: 'Sedna Academy' }
+// Releases have their own product domain (includes "academy", which paths/
+// modules never use) — kept separate from the shared path/module PRODUCT_META.
+const releaseProdLabel: Record<string, string> = { vms: 'Dataloy VMS', stream: 'Sedna Stream', academy: 'Sedna Academy' }
 const typeLabel: Record<string, string> = { v: 'Video', a: 'Article', l: 'Link', p: 'Podcast', s: 'Slides' }
 const typeIcon:  Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const typeBg:   Record<string, string>  = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
@@ -467,7 +470,7 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
             <tr v-for="m in allModules" :key="m.id">
               <td class="mod-title-cell">{{ m.title }}</td>
               <td><span class="pill" :style="{ background: typeBg[m.module_type], color: typeFg[m.module_type] }"><i :class="['ti', typeIcon[m.module_type]]" /> {{ typeLabel[m.module_type] ?? m.module_type }}</span></td>
-              <td><span class="muted">{{ prodLabel[m.product] ?? m.product }}</span></td>
+              <td><span class="muted">{{ productLabel(m.product) }}</span></td>
               <td class="muted">{{ m.duration_mins }} min</td>
               <td class="muted">Tier {{ m.tier_id }}</td>
             </tr>
@@ -557,7 +560,7 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
                 </span>
                 <div>
                   <div class="mod-row-title">{{ mod.title }}</div>
-                  <div class="mod-row-meta">{{ mod.duration_mins }} min · {{ prodLabel[mod.product] ?? mod.product }}</div>
+                  <div class="mod-row-meta">{{ mod.duration_mins }} min · {{ productLabel(mod.product) }}</div>
                 </div>
               </div>
               <div class="module-row-right">
@@ -588,7 +591,7 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
           <tbody>
             <tr v-for="r in releases" :key="r.id" class="clickable-row" @click="openEditRelease(r)">
               <td class="mod-title-cell">{{ r.title }}</td>
-              <td><span class="audience-tag">{{ prodLabel[r.product] ?? r.product }}</span></td>
+              <td><span class="audience-tag">{{ releaseProdLabel[r.product] ?? r.product }}</span></td>
               <td class="muted">{{ r.tag || '—' }}</td>
               <td class="muted">{{ new Date(r.published_at).toLocaleDateString() }}</td>
               <td class="actions-cell" @click.stop>
@@ -631,12 +634,10 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
             </div>
           </div>
 
-          <label class="field-label">Products</label>
-          <div class="check-row">
-            <label><input type="checkbox" value="vms" v-model="pathForm.products" /> Dataloy VMS</label>
-            <label><input type="checkbox" value="stream" v-model="pathForm.products" /> Sedna Stream</label>
-            <label><input type="checkbox" value="cross" v-model="pathForm.products" /> Cross-product</label>
-          </div>
+          <label class="field-label">Product</label>
+          <select v-model="pathForm.products[0]" class="field-input">
+            <option v-for="p in PRODUCT_ORDER" :key="p" :value="p">{{ PRODUCT_META[p].label }}</option>
+          </select>
         </div>
         <div class="modal-foot">
           <button class="btn btn-ghost" @click="showNewPath = false">Cancel</button>
@@ -1002,9 +1003,6 @@ tr:last-child td { border-bottom: none; }
 .field-textarea { resize: vertical; min-height: 72px; }
 .field-content { min-height: 160px; font-family: monospace; font-size: 12.5px; }
 .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
-
-.check-row { display: flex; gap: 16px; }
-.check-row label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
 
 .type-selector { display: flex; gap: 6px; }
 .type-btn { padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: inherit; color: var(--text-secondary); }

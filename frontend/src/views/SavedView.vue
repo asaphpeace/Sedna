@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { savedApi } from '@/api'
+import { PRODUCT_META, productShortLabel } from '@/constants/products'
 
 const app = useAppStore()
 const items = computed(() => app.saved)
@@ -14,12 +15,6 @@ async function unsave(moduleId: number) {
 const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
 const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
-const prodLabel: Record<string, string> = { vms: 'VMS', stream: 'Stream', cross: 'Cross' }
-const prodStyle: Record<string, { bg: string; fg: string }> = {
-  vms:    { bg: '#F1EBFE', fg: '#6E2BF0' },
-  stream: { bg: '#E3F4F9', fg: '#0B8FB0' },
-  cross:  { bg: '#E2F6EC', fg: '#0E9E6E' },
-}
 </script>
 
 <template>
@@ -44,7 +39,7 @@ const prodStyle: Record<string, { bg: string; fg: string }> = {
         <div class="row-body">
           <div class="row-title">{{ s.title }}</div>
           <div class="row-meta">
-            <span class="pill" :style="{ background: prodStyle[s.product]?.bg, color: prodStyle[s.product]?.fg }">{{ prodLabel[s.product] }}</span>
+            <span class="pill" :style="{ background: PRODUCT_META[s.product]?.bg, color: PRODUCT_META[s.product]?.color }">{{ productShortLabel(s.product) }}</span>
             · {{ s.role_name }} · {{ s.tier_name }} · {{ s.duration_mins }} min
           </div>
         </div>

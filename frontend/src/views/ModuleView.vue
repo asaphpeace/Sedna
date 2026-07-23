@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify'
 import { modulesApi, progressApi, savedApi, quizzesApi } from '@/api'
 import { useAppStore } from '@/stores/app'
 import ModuleComments from '@/components/ModuleComments.vue'
+import { productLabel } from '@/constants/products'
 
 marked.setOptions({ breaks: true, gfm: true })
 
@@ -132,13 +133,6 @@ async function toggleSave() {
     await savedApi.save(id)
   }
   await app.loadSaved()
-}
-
-const prodLabel: Record<string, string> = { vms: 'Dataloy VMS', stream: 'Sedna Stream', cross: 'Cross-product' }
-const prodStyle: Record<string, { bg: string; fg: string }> = {
-  vms:    { bg: '#F1EBFE', fg: '#6E2BF0' },
-  stream: { bg: '#E3F4F9', fg: '#0B8FB0' },
-  cross:  { bg: '#E2F6EC', fg: '#0E9E6E' },
 }
 
 const TYPE_ICON: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
@@ -309,7 +303,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             <div v-else class="video-wrap">
               <div class="video-inner">
                 <div class="video-badge">
-                  {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · VIDEO
+                  {{ productLabel(module.product).toUpperCase() }} · VIDEO
                 </div>
                 <div class="video-play-btn">
                   <i class="ti ti-player-play-filled" />
@@ -347,7 +341,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
               <audio class="podcast-audio" :src="module.video_url" :autoplay="autoplayEnabled" controls @ended="onVideoEnded" />
             </div>
             <div v-else class="video-inner">
-              <div class="video-badge">{{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · PODCAST</div>
+              <div class="video-badge">{{ productLabel(module.product).toUpperCase() }} · PODCAST</div>
               <div class="video-play-btn"><i class="ti ti-microphone" /></div>
             </div>
           </div>
@@ -363,7 +357,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
               allowfullscreen
             />
             <div v-else class="video-inner">
-              <div class="video-badge">{{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · SLIDES</div>
+              <div class="video-badge">{{ productLabel(module.product).toUpperCase() }} · SLIDES</div>
               <div class="video-play-btn"><i class="ti ti-presentation" /></div>
             </div>
           </div>
@@ -372,7 +366,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
           <div v-else class="article-banner">
             <div class="article-banner-icon"><i class="ti ti-file-text" /></div>
             <div class="article-banner-label">
-              {{ (prodLabel[module.product] ?? module.product).toUpperCase() }} · ARTICLE
+              {{ productLabel(module.product).toUpperCase() }} · ARTICLE
             </div>
           </div>
 

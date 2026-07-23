@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { pathsApi } from '@/api'
 import { useAppStore } from '@/stores/app'
+import { PRODUCT_META, productShortLabel } from '@/constants/products'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,12 +32,6 @@ const modState = (m: any) => app.moduleProgress[m.id]?.state ?? 'not_started'
 const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
 const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
-const prodLabel: Record<string, string> = { vms: 'VMS', stream: 'Stream', cross: 'Cross' }
-const prodStyle: Record<string, { bg: string; fg: string }> = {
-  vms:    { bg: '#F1EBFE', fg: '#6E2BF0' },
-  stream: { bg: '#E3F4F9', fg: '#0B8FB0' },
-  cross:  { bg: '#E2F6EC', fg: '#0E9E6E' },
-}
 </script>
 
 <template>
@@ -55,8 +50,8 @@ const prodStyle: Record<string, { bg: string; fg: string }> = {
           <span class="pill" :style="{ background: '#F3F2F6', color: '#5F5A6B' }">
             {{ role.audience === 'internal' ? 'Internal — Sedna Staff' : 'Customer Role' }}
           </span>
-          <span v-for="prod in role.products" :key="prod" class="pill" :style="{ background: prodStyle[prod]?.bg, color: prodStyle[prod]?.fg }">
-            {{ prodLabel[prod] ?? prod }}
+          <span v-for="prod in role.products" :key="prod" class="pill" :style="{ background: PRODUCT_META[prod]?.bg, color: PRODUCT_META[prod]?.color }">
+            {{ productShortLabel(prod) }}
           </span>
           <span class="meta-dot">·</span>
           <span class="meta-text">{{ role.tiers.reduce((a: number, t: any) => a + t.modules.length, 0) }} modules</span>
@@ -91,7 +86,7 @@ const prodStyle: Record<string, { bg: string; fg: string }> = {
               <div class="mod-body">
                 <span class="mod-title">{{ m.title }}</span>
                 <span class="mod-meta">
-                  <span class="pill" :style="{ background: prodStyle[m.product]?.bg, color: prodStyle[m.product]?.fg }">{{ prodLabel[m.product] }}</span>
+                  <span class="pill" :style="{ background: PRODUCT_META[m.product]?.bg, color: PRODUCT_META[m.product]?.color }">{{ productShortLabel(m.product) }}</span>
                   · {{ m.duration_mins }} min
                 </span>
               </div>
