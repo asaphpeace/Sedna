@@ -17,6 +17,7 @@ from app.routers import (
     gamification,
     modules,
     notifications,
+    org,
     paths,
     progress,
     releases,
@@ -62,6 +63,7 @@ app.include_router(social.router)
 app.include_router(compliance.router)
 app.include_router(webhooks.router)
 app.include_router(uploads.router)
+app.include_router(org.router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

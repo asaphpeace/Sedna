@@ -22,6 +22,7 @@ const router = createRouter({
         { path: 'certs', component: () => import('@/views/CertsView.vue') },
         { path: 'certs/:id', component: () => import('@/views/CertificateView.vue') },
         { path: 'team', component: () => import('@/views/TeamView.vue') },
+        { path: 'compliance', component: () => import('@/views/ComplianceView.vue') },
         { path: 'activity', component: () => import('@/views/ActivityView.vue') },
         { path: 'users', component: () => import('@/views/UsersView.vue') },
         { path: 'content', component: () => import('@/views/ContentView.vue') },

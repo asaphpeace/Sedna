@@ -15,6 +15,8 @@ class UserOut(BaseModel):
     is_admin: bool
     org_id: int
     last_active_at: Optional[datetime]
+    department_id: Optional[int] = None
+    is_manager: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -32,6 +34,7 @@ class UserUpdate(BaseModel):
     status: Optional[str] = None
     color: Optional[str] = None
     is_admin: Optional[bool] = None
+    department_id: Optional[int] = None
 
 
 class UserInvite(BaseModel):

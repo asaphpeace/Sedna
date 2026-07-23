@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.models.org_structure import Department
 from app.models.user import User
 from app.schemas.auth import LoginRequest, TokenData, TokenResponse
 from app.schemas.user import UserOut
@@ -28,5 +30,9 @@ async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends
 
 
 @router.get("/me", response_model=UserOut)
-async def me(user: User = Depends(current_user)):
-    return user
+async def me(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = UserOut.model_validate(user)
+    if not user.is_admin:
+        result = await db.execute(select(Department).where(Department.manager_user_id == user.id))
+        out.is_manager = result.scalars().first() is not None
+    return out

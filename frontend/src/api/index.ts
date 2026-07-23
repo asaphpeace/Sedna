@@ -139,6 +139,24 @@ export const complianceApi = {
   orgExpiring: (days = 30) => client.get('/compliance/org/expiring', { params: { days } }),
 }
 
+// ── Org structure & assignments (HR/manager training tracking) ─────────
+export const orgApi = {
+  listDepartments: () => client.get('/admin/departments'),
+  createDepartment: (body: { name: string; manager_user_id?: number | null }) =>
+    client.post('/admin/departments', body),
+  updateDepartment: (id: number, body: { name: string; manager_user_id?: number | null }) =>
+    client.patch(`/admin/departments/${id}`, body),
+  deleteDepartment: (id: number) => client.delete(`/admin/departments/${id}`),
+
+  createAssignments: (body: {
+    user_ids: number[]; department_id?: number | null
+    tier_id: number; due_date?: string | null; mandatory: boolean
+  }) => client.post('/assignments', body),
+  listAssignments: () => client.get('/assignments'),
+  myAssignments: () => client.get('/assignments/me'),
+  deleteAssignment: (id: number) => client.delete(`/assignments/${id}`),
+}
+
 // ── Uploads ───────────────────────────────────────────
 export const uploadsApi = {
   uploadImage: (file: File) => {

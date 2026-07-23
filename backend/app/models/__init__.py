@@ -8,6 +8,8 @@ from app.models.gamification import UserXP, Badge, UserBadge, UserStreak
 from app.models.notification import Notification
 from app.models.social import ModuleComment, CommentLike
 from app.models.compliance import CertExpiry, WebhookEndpoint
+from app.models.org_structure import Department
+from app.models.assignment import Assignment
 
 __all__ = [
     "Organisation", "User",
@@ -19,4 +21,5 @@ __all__ = [
     "Notification",
     "ModuleComment", "CommentLike",
     "CertExpiry", "WebhookEndpoint",
+    "Department", "Assignment",
 ]

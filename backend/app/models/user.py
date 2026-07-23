@@ -23,6 +23,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     org_id: Mapped[int] = mapped_column(ForeignKey("organisations.id"), index=True)
+    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255))
     initial: Mapped[str] = mapped_column(String(4))

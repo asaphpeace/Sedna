@@ -1,11 +1,33 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { orgApi } from '@/api'
 
 const app = useAppStore()
 const topPaths = computed(() => app.pathProgress.slice(0, 3))
 const recentActivity = computed(() => app.activity.slice(0, 5))
 const recentReleases = computed(() => app.releases.slice(0, 3))
+
+// Assigned (pushed) training is distinct from self-directed browsing —
+// only show the card at all once we know whether there's anything in it.
+const assignments = ref<any[]>([])
+onMounted(async () => {
+  try {
+    const { data } = await orgApi.myAssignments()
+    assignments.value = data.filter((a: any) => a.status !== 'complete')
+  } catch {
+    assignments.value = []
+  }
+})
+
+function dueLabel(a: any) {
+  if (!a.due_date) return null
+  const days = Math.ceil((new Date(a.due_date).getTime() - Date.now()) / 86400000)
+  if (a.status === 'overdue' || days < 0) return { text: `Overdue by ${Math.abs(days)}d`, urgent: true }
+  if (days === 0) return { text: 'Due today', urgent: true }
+  if (days <= 7) return { text: `Due in ${days}d`, urgent: true }
+  return { text: `Due ${a.due_date}`, urgent: false }
+}
 
 const prodColor: Record<string, { bg: string; fg: string; label: string }> = {
   vms:    { bg: '#F1EBFE', fg: '#6E2BF0', label: 'VMS' },
@@ -27,6 +49,22 @@ function actionIconFg(action: string) {
 
 <template>
   <div class="page">
+
+    <!-- Assigned to you (mandatory/pushed training, separate from self-directed browsing) -->
+    <section v-if="assignments.length" class="card assigned-card">
+      <div class="section-head">
+        <span class="section-title">Assigned to you</span>
+      </div>
+      <div class="assigned-list">
+        <RouterLink v-for="a in assignments" :key="a.id" :to="`/paths/${a.role_id ?? ''}`" class="assigned-row">
+          <div class="assigned-body">
+            <span class="assigned-name">{{ a.role_name }} — {{ a.tier_name }}</span>
+            <span v-if="a.mandatory" class="mandatory-tag">Mandatory</span>
+          </div>
+          <span v-if="dueLabel(a)" class="due-tag" :class="{ urgent: dueLabel(a)!.urgent }">{{ dueLabel(a)!.text }}</span>
+        </RouterLink>
+      </div>
+    </section>
 
     <div class="grid">
       <!-- My Paths progress -->
@@ -132,4 +170,15 @@ function actionIconFg(action: string) {
 .release-title { font-size: 13.5px; font-weight: 600; }
 .release-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
 .release-date { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+/* Assigned to you */
+.assigned-card { margin-bottom: 20px; border: 1px solid var(--purple); }
+.assigned-list { display: flex; flex-direction: column; gap: 0; }
+.assigned-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); text-decoration: none; }
+.assigned-row:last-child { border-bottom: none; }
+.assigned-body { display: flex; align-items: center; gap: 8px; }
+.assigned-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.mandatory-tag { font-size: 10.5px; font-weight: 700; color: #B26A00; background: #FBF1E3; padding: 2px 7px; border-radius: 100px; }
+.due-tag { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.due-tag.urgent { color: #C0392B; }
 </style>

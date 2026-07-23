@@ -26,6 +26,10 @@ const teamNav = [
   { to: '/activity', icon: 'ti-activity',       label: 'Activity' },
 ]
 
+const complianceNav = [
+  { to: '/compliance', icon: 'ti-clipboard-check', label: 'Compliance' },
+]
+
 const adminNav = [
   { to: '/users',        icon: 'ti-user-cog',     label: 'Users' },
   { to: '/content',      icon: 'ti-layout-grid',  label: 'Content' },
@@ -70,6 +74,9 @@ const active = (to: string) =>
 
       <div class="nav-section">Team</div>
       <NavItem v-for="item in teamNav" :key="item.to" v-bind="item" :active="active(item.to)" />
+      <template v-if="auth.user?.is_admin || auth.user?.is_manager">
+        <NavItem v-for="item in complianceNav" :key="item.to" v-bind="item" :active="active(item.to)" />
+      </template>
 
       <template v-if="auth.user?.is_admin">
         <div class="nav-section">Admin</div>

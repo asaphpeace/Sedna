@@ -124,6 +124,7 @@ async function markDone() {
     await app.loadModuleProgress()
     await app.loadPathProgress()
     await app.loadGamification()
+    await app.loadCerts()
     // Brief, deliberate pause before revealing "next lesson" — long enough
     // to read as an acknowledgement, short enough not to feel like a wait.
     await new Promise((r) => setTimeout(r, 1800))

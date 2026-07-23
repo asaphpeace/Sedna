@@ -12,6 +12,7 @@ export interface User {
   status: string
   is_admin: boolean
   org_id: number
+  is_manager?: boolean
 }
 
 export const useAuthStore = defineStore('auth', () => {
