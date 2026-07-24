@@ -1,4 +1,4 @@
-"""Seed the VMS Support learning path.
+"""Seed the VMS Support learning path...
 
 Unlike seed.py (which TRUNCATEs every table before reseeding), this script
 is purely additive: it checks whether a "VMS Support" LearningRole already
