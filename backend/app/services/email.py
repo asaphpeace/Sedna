@@ -30,7 +30,7 @@ async def send_email(to: str, subject: str, html: str, text: Optional[str] = Non
         msg.attach(MIMEText(text, "plain"))
     msg.attach(MIMEText(html, "html"))
 
-    def _send():
+        def _send():
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
             if settings.smtp_tls:
                 server.starttls()
@@ -38,7 +38,12 @@ async def send_email(to: str, subject: str, html: str, text: Optional[str] = Non
                 server.login(settings.smtp_user, settings.smtp_password)
             server.send_message(msg)
 
-    await asyncio.to_thread(_send)
+    try:
+        await asyncio.to_thread(_send)
+    except Exception:
+        # Delivery failure must never crash the request that triggered it
+        # (module completion, cert award, etc.) or roll back its transaction.
+        logger.exception(f"[EMAIL] Failed to send to {to!r}: {subject!r}")
 
 
 async def send_welcome_email(to: str, name: str):
