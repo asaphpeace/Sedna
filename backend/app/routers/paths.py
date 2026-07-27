@@ -26,6 +26,10 @@ async def list_paths(
     out = []
     for r in roles:
         mod_count = sum(len(t.modules) for t in r.tiers)
+        if mod_count == 0:
+            # A course with no modules yet (still being drafted) shouldn't
+            # be browsable — nothing to show, nothing to start.
+            continue
         out.append(
             LearningRoleSummary(
                 id=r.id, name=r.name, description=r.description,
