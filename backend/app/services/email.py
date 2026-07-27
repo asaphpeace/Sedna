@@ -30,7 +30,7 @@ async def send_email(to: str, subject: str, html: str, text: Optional[str] = Non
         msg.attach(MIMEText(text, "plain"))
     msg.attach(MIMEText(html, "html"))
 
-        def _send():
+    def _send():
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
             if settings.smtp_tls:
                 server.starttls()
