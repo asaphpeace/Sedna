@@ -11,8 +11,10 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.content import LearningRole, Module, Tier
-from app.models.quiz import QuizOption, QuizQuestion
+from app.models.progress import SavedModule, UserModuleProgress
+from app.models.quiz import QuizAttempt, QuizOption, QuizQuestion
 from app.models.release import Release
+from app.models.social import ModuleComment
 from app.models.user import User
 from app.services.deps import current_user
 
@@ -375,12 +377,44 @@ async def delete_module(
     mod = result.scalar_one_or_none()
     if not mod:
         raise HTTPException(404, "Module not found")
+
+    # Real learner activity blocks deletion outright — checked explicitly,
+    # per table, so the error actually reflects what's blocking it.
+    if (await db.execute(
+        select(UserModuleProgress.id).where(UserModuleProgress.module_id == module_id).limit(1)
+    )).scalar_one_or_none():
+        raise HTTPException(400, "Cannot delete: learners have progress recorded against this module")
+
+    if (await db.execute(
+        select(QuizAttempt.id).where(QuizAttempt.module_id == module_id).limit(1)
+    )).scalar_one_or_none():
+        raise HTTPException(400, "Cannot delete: learners have quiz attempts recorded against this module")
+
+    if (await db.execute(
+        select(SavedModule.id).where(SavedModule.module_id == module_id).limit(1)
+    )).scalar_one_or_none():
+        raise HTTPException(400, "Cannot delete: learners have saved this module")
+
+    if (await db.execute(
+        select(ModuleComment.id).where(ModuleComment.module_id == module_id).limit(1)
+    )).scalar_one_or_none():
+        raise HTTPException(400, "Cannot delete: this module has learner comments")
+
+    # No real learner activity — safe to remove any never-attempted quiz
+    # content attached to this module first (QuizOption rows cascade via
+    # the existing relationship), since QuizQuestion.module_id has no
+    # ON DELETE CASCADE at the database level and would otherwise block
+    # deletion of the module itself even though nobody ever answered it.
+    quiz_result = await db.execute(select(QuizQuestion).where(QuizQuestion.module_id == module_id))
+    for question in quiz_result.scalars().all():
+        await db.delete(question)
+
     try:
         await db.delete(mod)
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(400, "Cannot delete: learners have progress or quiz attempts recorded against this module")
+        raise HTTPException(400, "Cannot delete: this module is still referenced elsewhere")
     return {"status": "deleted"}
 
 
