@@ -64,6 +64,7 @@ class Module(Base):
     video_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     video_duration_secs: Mapped[int] = mapped_column(Integer, default=0)
     transcript: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    audio_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # generated via AWS Polly
 
     tier: Mapped["Tier"] = relationship(back_populates="modules")
     progress: Mapped[list["UserModuleProgress"]] = relationship(back_populates="module")

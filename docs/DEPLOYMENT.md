@@ -122,7 +122,9 @@ the account you'll actually log in with.
 Leave `EMAIL_ENABLED=false` until you have real SMTP credentials — with it
 `false`, the app logs emails to the container's stdout instead of sending
 them, so nothing breaks, you just won't get real invite/certificate emails
-yet.
+yet. See **Setting up email (AWS SES)** below once you're ready to turn
+it on — invites in particular need working email, since accepting one is
+the only way a teammate can set a password and log in.
 
 ## Step 5 — Deploy
 
@@ -239,6 +241,101 @@ intervention needed, as long as the Docker service itself is enabled
 
 ---
 
+## Setting up email (AWS SES)
+
+Invite emails (and cert/streak/near-cert notifications) go out over SMTP.
+AWS SES gives you **62,000 emails/month free, permanently, as long as
+you send from an EC2 instance** in the same account/region — not the
+usual 12-month free tier, an ongoing one. Since the app already runs on
+EC2, this costs nothing at your volume. SES also speaks plain SMTP, so
+none of the app's email code needs to change — only `.env`.
+
+1. **Verify a sender identity.** In the SES console, verify either a
+   single email address (fastest — good enough for a `noreply@` you
+   control) or your whole domain (better long-term: lets you send from
+   any address `@yourcompany.com`, and gives you DKIM signing). Domain
+   verification means adding a few DNS TXT/CNAME records SES gives you —
+   do this wherever `DOMAIN` in your `.env` is hosted.
+2. **Request production access.** New SES accounts start in a *sandbox*
+   that can only send to addresses you've individually verified — useless
+   for inviting real teammates. In the SES console, request production
+   access (a short form: describe the use case as "transactional emails —
+   account invites and course-completion notifications for an internal
+   training app"). This is usually approved within a few hours to a day.
+3. **Create SMTP credentials.** SES → "SMTP settings" → "Create SMTP
+   credentials". This generates an IAM user scoped to `ses:SendRawEmail`
+   with an SMTP username/password (different from your AWS access
+   key/secret — don't reuse those).
+4. **Set these in `.env` on the server:**
+   ```bash
+   EMAIL_ENABLED=true
+   SMTP_HOST=email-smtp.<your-region>.amazonaws.com   # e.g. email-smtp.eu-west-1.amazonaws.com
+   SMTP_PORT=587
+   SMTP_TLS=true
+   SMTP_USER=<the SMTP username SES generated>
+   SMTP_PASSWORD=<the SMTP password SES generated>
+   SMTP_FROM=noreply@yourcompany.com                   # must be the verified identity/domain
+   ```
+5. Restart the backend so it picks up the new `.env`:
+   ```bash
+   docker compose -f docker-compose.prod.yml restart backend
+   ```
+6. Send a real invite from the Team page and confirm it lands (check spam
+   the first time — SES sender reputation is fresh).
+
+If you'd rather not deal with SES sandbox/DNS verification right now,
+Gmail SMTP with an [app password](https://myaccount.google.com/apppasswords)
+works as a drop-in `SMTP_HOST=smtp.gmail.com` alternative for low volume —
+same `.env` shape, no AWS-side setup, just less headroom before Gmail's
+own sending limits kick in.
+
+## Setting up text-to-speech (AWS Polly)
+
+Lets learners listen to article/text modules instead of only reading them.
+An admin generates the audio once per article from the Content editor
+("Generate audio" button); it's cached as an MP3 and served to every
+learner from then on — Polly isn't called again until someone regenerates
+it.
+
+**Auth: use an IAM role on the EC2 instance, not access keys in `.env`.**
+Unlike SES's SMTP interface (which only supports SMTP username/password),
+Polly's API supports IAM roles directly via boto3's default credential
+chain — so nothing needs to live in `.env` at all, and there's no long-lived
+secret to rotate or leak.
+
+1. **Create an IAM policy** scoped to just what's needed:
+   IAM console → Policies → Create policy → JSON:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       { "Effect": "Allow", "Action": "polly:SynthesizeSpeech", "Resource": "*" }
+     ]
+   }
+   ```
+   Name it something like `sedna-academy-polly`.
+2. **Create an IAM role** for EC2: IAM console → Roles → Create role →
+   trusted entity type "AWS service" → use case "EC2" → attach the policy
+   from step 1 → name it `sedna-academy-ec2-role`.
+3. **Attach the role to the running instance** (no restart/downtime
+   needed): EC2 console → select the `sedna-academy` instance → Actions →
+   Security → "Modify IAM role" → pick `sedna-academy-ec2-role` → Update.
+4. That's it — no `.env` changes required. boto3 inside the backend
+   container picks up the role's temporary credentials automatically via
+   the EC2 instance metadata service. Confirm it works by generating audio
+   for a real article module and checking the backend logs if it fails:
+   ```bash
+   docker compose -f docker-compose.prod.yml logs -f backend
+   ```
+
+`AWS_REGION` defaults to `us-east-1` and `POLLY_VOICE_ID` defaults to
+`Joanna` (US English, neural) — override either in `.env` if you want a
+different region or voice. [Full voice list](https://docs.aws.amazon.com/polly/latest/dg/voicelist.html).
+
+Cost: Polly's Neural tier free usage is 1 million characters/month for
+the first 12 months, then ~$16 per million characters after — for a
+course catalog, that's very likely free indefinitely at realistic volume.
+
 ## Things worth doing next (not required to launch)
 
 - **Generate a `frontend/package-lock.json`** (run `npm install` locally
@@ -248,9 +345,6 @@ intervention needed, as long as the Docker service itself is enabled
 - **Real Alembic migrations** — see the note in Step 6.
 - **CloudWatch or a simple uptime check** (e.g. UptimeRobot's free tier)
   so you find out about downtime before a customer does.
-- **SMTP provider** (SES, Postmark, etc.) so certificate/invite emails
-  actually send — SES is itself in AWS's free tier (62,000 emails/month
-  free if sent from an EC2 instance).
 - **A staging environment** — even a second, smaller EC2 instance running
   the same compose file against a separate `.env`, so schema/content
   changes get a dry run before hitting real learners.

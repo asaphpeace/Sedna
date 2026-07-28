@@ -18,6 +18,24 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class AcceptInviteRequest(BaseModel):
+    token: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
+
+
+class InviteInfo(BaseModel):
+    name: str
+    email: str
+    org_name: str
+
+
 class TokenData(BaseModel):
     user_id: int
     org_id: int

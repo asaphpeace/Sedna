@@ -31,11 +31,18 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = data
   }
 
+  async function acceptInvite(inviteToken: string, password: string) {
+    const { data } = await authApi.acceptInvite(inviteToken, password)
+    token.value = data.access_token
+    localStorage.setItem('token', data.access_token)
+    await fetchMe()
+  }
+
   function logout() {
     token.value = null
     user.value = null
     localStorage.removeItem('token')
   }
 
-  return { user, token, login, fetchMe, logout }
+  return { user, token, login, fetchMe, acceptInvite, logout }
 })

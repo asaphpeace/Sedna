@@ -18,6 +18,7 @@ const module = ref<any>(null)
 const tierModules = ref<any[]>([])
 const hasQuiz = ref(false)
 const activeTab = ref<'overview' | 'transcript' | 'resources' | 'notes'>('overview')
+const showListen = ref(false)
 
 // Text/article modules drop the Transcript tab — there's nothing to
 // transcribe when the content already is text.
@@ -39,6 +40,7 @@ async function loadModule(id: number) {
   // screen (video, title, completion state) stays frozen on the old module.
   module.value = null
   activeTab.value = 'overview'
+  showListen.value = false
   justCompleted.value = false
 
   const { data } = await modulesApi.get(id)
@@ -478,12 +480,18 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
           <!-- Article header (reading-focused chrome, no video console) -->
           <div v-else class="article-header">
-            <div class="article-eyebrow">
-              {{ productLabel(module.product).toUpperCase() }} · ARTICLE · {{ module.duration_mins }} min read
+            <div class="article-eyebrow-row">
+              <div class="article-eyebrow">
+                {{ productLabel(module.product).toUpperCase() }} · ARTICLE · {{ module.duration_mins }} min read
+              </div>
+              <button v-if="module.audio_url" type="button" class="listen-toggle" @click="showListen = !showListen">
+                <i class="ti ti-headphones" /> {{ showListen ? 'Hide player' : 'Listen' }}
+              </button>
             </div>
             <div class="article-progress-track">
               <div class="article-progress-fill" :style="{ width: readingPct + '%' }" />
             </div>
+            <audio v-if="module.audio_url && showListen" class="article-audio" :src="module.audio_url" controls />
           </div>
 
           <!-- Title + actions -->
@@ -819,10 +827,18 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
 /* ── Article header (replaces video console for text modules) ──────────── */
 .article-header { padding: 20px 28px 0; }
+.article-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .article-eyebrow {
   font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
   color: var(--purple);
 }
+.listen-toggle {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--purple);
+  background: var(--purple-subtle); border: none; border-radius: 100px;
+  padding: 4px 11px; cursor: pointer; flex-shrink: 0;
+}
+.listen-toggle:hover { background: var(--purple-bg); }
 .article-progress-track {
   height: 3px; border-radius: 100px; background: var(--border);
   margin-top: 10px; overflow: hidden;
@@ -831,6 +847,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   height: 100%; background: var(--purple);
   transition: width 0.1s linear;
 }
+.article-audio { width: 100%; margin-top: 12px; }
 
 /* ── Article body ──────────────────────────────────────────
    Content is injected via v-html (rendered Markdown), so scoped styles

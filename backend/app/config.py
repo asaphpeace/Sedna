@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from: str = "noreply@sedna.academy"
     app_url: str = "http://localhost:5173"
+    # Text-to-speech (AWS Polly) — see docs/DEPLOYMENT.md
+    aws_region: str = "us-east-1"
+    polly_voice_id: str = "Joanna"
 
     @property
     def allowed_origins(self) -> list[str]:

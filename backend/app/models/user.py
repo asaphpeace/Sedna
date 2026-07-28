@@ -31,6 +31,8 @@ class User(Base):
     role: Mapped[Optional[str]] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(20), default="active")  # active | invited | inactive
     password_hash: Mapped[Optional[str]] = mapped_column(String(255))
+    invite_token: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    invite_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     is_admin: Mapped[bool] = mapped_column(default=False)
     xp_total: Mapped[int] = mapped_column(default=0)
     onboarding_complete: Mapped[bool] = mapped_column(default=False)

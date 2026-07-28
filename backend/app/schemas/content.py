@@ -18,6 +18,7 @@ class ModuleOut(BaseModel):
     video_url: Optional[str] = None
     rich_content: Optional[str] = None
     transcript: Optional[str] = None
+    audio_url: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

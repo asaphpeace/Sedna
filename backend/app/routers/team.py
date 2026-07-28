@@ -1,3 +1,6 @@
+import secrets
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +11,8 @@ from app.schemas.user import UserOut, UserInvite, UserUpdate
 from app.services.deps import current_user, admin_user
 from app.services.email import send_invite_email
 from app.routers.webhooks import deliver_webhook
+
+INVITE_TOKEN_TTL = timedelta(days=7)
 
 router = APIRouter(prefix="/team", tags=["team"])
 
@@ -39,6 +44,8 @@ async def invite_user(
         color=random.choice(colors),
         role=body.role,
         status="invited",
+        invite_token=secrets.token_urlsafe(32),
+        invite_token_expires_at=datetime.utcnow() + INVITE_TOKEN_TTL,
     )
     db.add(new_user)
     await db.commit()
@@ -46,7 +53,10 @@ async def invite_user(
 
     org_result = await db.execute(select(Organisation).where(Organisation.id == admin.org_id))
     org = org_result.scalar_one_or_none()
-    await send_invite_email(new_user.email, new_user.name, admin.name, org.name if org else "your team")
+    await send_invite_email(
+        new_user.email, new_user.name, admin.name, new_user.invite_token,
+        org.name if org else "your team",
+    )
 
     await deliver_webhook(db, admin.org_id, "user.invited", {
         "user_id": new_user.id, "email": new_user.email, "invited_by": admin.id,

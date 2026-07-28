@@ -5,6 +5,9 @@ export const authApi = {
   login: (email: string, password: string) =>
     client.post<{ access_token: string }>('/auth/login', { email, password }),
   me: () => client.get('/auth/me'),
+  getInvite: (token: string) => client.get(`/auth/invite/${token}`),
+  acceptInvite: (token: string, password: string) =>
+    client.post<{ access_token: string }>('/auth/accept-invite', { token, password }),
 }
 
 // ── Paths ─────────────────────────────────────────────
@@ -29,6 +32,7 @@ export const adminApi = {
   listModules: (tierId: number) => client.get(`/admin/tiers/${tierId}/modules`),
   createModule: (tierId: number, body: any) => client.post(`/admin/tiers/${tierId}/modules`, body),
   updateModule: (moduleId: number, body: any) => client.patch(`/admin/modules/${moduleId}`, body),
+  generateAudio: (moduleId: number) => client.post(`/admin/modules/${moduleId}/generate-audio`),
   deleteModule: (moduleId: number) => client.delete(`/admin/modules/${moduleId}`),
   // quiz
   getModuleQuiz: (moduleId: number) => client.get(`/admin/modules/${moduleId}/quiz`),

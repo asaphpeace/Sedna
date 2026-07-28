@@ -5,6 +5,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
+    { path: '/accept-invite', component: () => import('@/views/AcceptInviteView.vue'), meta: { public: true } },
     { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFoundView.vue'), meta: { public: true } },
     {
       path: '/',

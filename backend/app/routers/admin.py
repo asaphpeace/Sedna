@@ -99,6 +99,7 @@ class ModuleOut(BaseModel):
     video_url: Optional[str]
     transcript: Optional[str]
     rich_content: Optional[str]
+    audio_url: Optional[str] = None
     model_config = {"from_attributes": True}
 
 
@@ -362,6 +363,33 @@ async def update_module(
         raise HTTPException(404, "Module not found")
     for k, v in body.model_dump().items():
         setattr(mod, k, v)
+    await db.commit()
+    await db.refresh(mod)
+    return mod
+
+
+@router.post("/modules/{module_id}/generate-audio", response_model=ModuleOut)
+async def generate_module_audio(
+    module_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    from app.services.tts import TTSError, synthesize_article_audio
+
+    result = await db.execute(select(Module).where(Module.id == module_id))
+    mod = result.scalar_one_or_none()
+    if not mod:
+        raise HTTPException(404, "Module not found")
+    if mod.module_type != "a":
+        raise HTTPException(400, "Audio generation is only available for article modules")
+    if not mod.rich_content or not mod.rich_content.strip():
+        raise HTTPException(400, "This article has no content to read yet")
+
+    try:
+        mod.audio_url = synthesize_article_audio(mod.id, mod.rich_content)
+    except TTSError as e:
+        raise HTTPException(502, str(e))
+
     await db.commit()
     await db.refresh(mod)
     return mod

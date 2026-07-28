@@ -199,6 +199,7 @@ function openEditModule(mod: any, tierId: number) {
     product: mod.product, is_placeholder: mod.is_placeholder, sort_order: mod.sort_order,
     description: mod.description, learn_items: [...(mod.learn_items ?? [])],
     video_url: mod.video_url ?? '', transcript: mod.transcript ?? '', rich_content: mod.rich_content ?? '',
+    audio_url: mod.audio_url ?? null,
   }
   moduleForm.value = loadDraft(draftKey.value) ?? fromServer
   newLearnItem.value = ''
@@ -266,6 +267,27 @@ async function uploadAndInsertImage(e: Event) {
 
 function insertCallout(type: 'TIP' | 'WARNING') {
   insertAtCursor(`\n> [!${type}]\n> \n`)
+}
+
+// ── Generate audio (AWS Polly) ───────────────────────────
+// Reads whatever's currently saved on the module, not unsaved edits in the
+// textarea — the article must be saved first, which the UI makes explicit.
+const generatingAudio = ref(false)
+const audioGenError = ref('')
+
+async function generateAudio() {
+  if (!editingModule.value) return
+  generatingAudio.value = true
+  audioGenError.value = ''
+  try {
+    const { data } = await adminApi.generateAudio(editingModule.value.id)
+    editingModule.value.audio_url = data.audio_url
+    moduleForm.value.audio_url = data.audio_url
+  } catch (err: any) {
+    audioGenError.value = err?.response?.data?.detail || 'Audio generation failed'
+  } finally {
+    generatingAudio.value = false
+  }
 }
 
 async function saveModule() {
@@ -808,6 +830,23 @@ const typeFg:   Record<string, string>  = { v: '#6E2BF0', a: '#B26A00', l: '#0B8
               placeholder="Write your article content here (Markdown supported)…"
               rows="8"
             />
+
+            <div class="audio-gen-row">
+              <template v-if="!editingModule">
+                <span class="field-hint">Save this module before generating audio.</span>
+              </template>
+              <template v-else>
+                <button type="button" class="btn btn-ghost btn-sm" :disabled="generatingAudio" @click="generateAudio">
+                  <i class="ti ti-loader-2" v-if="generatingAudio" style="animation: spin 0.8s linear infinite" />
+                  <i class="ti ti-volume" v-else />
+                  {{ generatingAudio ? 'Generating…' : (moduleForm.audio_url ? 'Regenerate audio' : 'Generate audio (AWS Polly)') }}
+                </button>
+                <span v-if="moduleForm.audio_url" class="field-hint">
+                  <i class="ti ti-circle-check" style="color: var(--green)" /> Audio ready
+                </span>
+                <p v-if="audioGenError" class="field-error">{{ audioGenError }}</p>
+              </template>
+            </div>
           </template>
 
           <!-- Transcript for videos and podcasts -->
@@ -1045,6 +1084,7 @@ tr:last-child td { border-bottom: none; }
 .image-popover-row .field-input { flex: 1; }
 .upload-btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .field-error { font-size: 12px; color: var(--red, #d32f2f); margin: 0; }
+.audio-gen-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .field-input {
   width: 100%; padding: 8px 11px; border: 1px solid var(--border);
   border-radius: 8px; font-size: 13.5px; font-family: inherit;
