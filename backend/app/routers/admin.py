@@ -398,6 +398,7 @@ async def generate_module_audio(
 @router.delete("/modules/{module_id}")
 async def delete_module(
     module_id: int,
+    force: bool = False,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(_require_admin),
 ):
@@ -406,33 +407,66 @@ async def delete_module(
     if not mod:
         raise HTTPException(404, "Module not found")
 
-    # Real learner activity blocks deletion outright — checked explicitly,
-    # per table, so the error actually reflects what's blocking it.
-    if (await db.execute(
-        select(UserModuleProgress.id).where(UserModuleProgress.module_id == module_id).limit(1)
-    )).scalar_one_or_none():
-        raise HTTPException(400, "Cannot delete: learners have progress recorded against this module")
+    # Real learner activity blocks deletion by default — checked explicitly,
+    # per table, so the error actually reflects what's blocking it. Passing
+    # ?force=true overrides this and cascades the cleanup instead, for
+    # deliberately clearing out test/placeholder content during authoring.
+    if not force:
+        if (await db.execute(
+            select(UserModuleProgress.id).where(UserModuleProgress.module_id == module_id).limit(1)
+        )).scalar_one_or_none():
+            raise HTTPException(400, "Cannot delete: learners have progress recorded against this module")
 
-    if (await db.execute(
-        select(QuizAttempt.id).where(QuizAttempt.module_id == module_id).limit(1)
-    )).scalar_one_or_none():
-        raise HTTPException(400, "Cannot delete: learners have quiz attempts recorded against this module")
+        if (await db.execute(
+            select(QuizAttempt.id).where(QuizAttempt.module_id == module_id).limit(1)
+        )).scalar_one_or_none():
+            raise HTTPException(400, "Cannot delete: learners have quiz attempts recorded against this module")
 
-    if (await db.execute(
-        select(SavedModule.id).where(SavedModule.module_id == module_id).limit(1)
-    )).scalar_one_or_none():
-        raise HTTPException(400, "Cannot delete: learners have saved this module")
+        if (await db.execute(
+            select(SavedModule.id).where(SavedModule.module_id == module_id).limit(1)
+        )).scalar_one_or_none():
+            raise HTTPException(400, "Cannot delete: learners have saved this module")
 
-    if (await db.execute(
-        select(ModuleComment.id).where(ModuleComment.module_id == module_id).limit(1)
-    )).scalar_one_or_none():
-        raise HTTPException(400, "Cannot delete: this module has learner comments")
+        if (await db.execute(
+            select(ModuleComment.id).where(ModuleComment.module_id == module_id).limit(1)
+        )).scalar_one_or_none():
+            raise HTTPException(400, "Cannot delete: this module has learner comments")
+    else:
+        # Cascade away everything that would otherwise block deletion.
+        # Each row is loaded and deleted through the ORM (not a bulk
+        # statement) so relationship-level cascades — QuizAttempt.answers,
+        # ModuleComment.likes — actually fire.
+        attempts = (await db.execute(
+            select(QuizAttempt).where(QuizAttempt.module_id == module_id)
+        )).scalars().all()
+        for attempt in attempts:
+            await db.delete(attempt)
 
-    # No real learner activity — safe to remove any never-attempted quiz
-    # content attached to this module first (QuizOption rows cascade via
-    # the existing relationship), since QuizQuestion.module_id has no
-    # ON DELETE CASCADE at the database level and would otherwise block
-    # deletion of the module itself even though nobody ever answered it.
+        progress_rows = (await db.execute(
+            select(UserModuleProgress).where(UserModuleProgress.module_id == module_id)
+        )).scalars().all()
+        for row in progress_rows:
+            await db.delete(row)
+
+        saved_rows = (await db.execute(
+            select(SavedModule).where(SavedModule.module_id == module_id)
+        )).scalars().all()
+        for row in saved_rows:
+            await db.delete(row)
+
+        comments = (await db.execute(
+            select(ModuleComment).where(ModuleComment.module_id == module_id)
+        )).scalars().all()
+        for comment in comments:
+            await db.delete(comment)
+
+        await db.flush()
+
+    # No real learner activity (or force=true already cleared it) — safe to
+    # remove any quiz content attached to this module (QuizOption rows
+    # cascade via the existing relationship), since QuizQuestion.module_id
+    # has no ON DELETE CASCADE at the database level and would otherwise
+    # block deletion of the module itself even though nobody answered it.
     quiz_result = await db.execute(select(QuizQuestion).where(QuizQuestion.module_id == module_id))
     for question in quiz_result.scalars().all():
         await db.delete(question)

@@ -25,16 +25,20 @@ async def list_paths(
     roles = result.scalars().all()
     out = []
     for r in roles:
-        mod_count = sum(len(t.modules) for t in r.tiers)
-        if mod_count == 0:
-            # A course with no modules yet (still being drafted) shouldn't
-            # be browsable — nothing to show, nothing to start.
+        # Placeholder modules (title/structure only, no real content yet —
+        # e.g. the Veson University curriculum import) don't count as
+        # browsable content. A course where every module is still a
+        # placeholder is exactly as "not ready" as one with zero modules.
+        real_mod_count = sum(
+            1 for t in r.tiers for m in t.modules if not m.is_placeholder
+        )
+        if real_mod_count == 0:
             continue
         out.append(
             LearningRoleSummary(
                 id=r.id, name=r.name, description=r.description,
                 icon=r.icon, color=r.color, audience=r.audience,
-                products=r.products, mod_count=mod_count, tier_count=len(r.tiers),
+                products=r.products, mod_count=real_mod_count, tier_count=len(r.tiers),
             )
         )
     return out
