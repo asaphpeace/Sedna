@@ -124,10 +124,10 @@ const tierLabel = computed(() => {
             <!-- Footer -->
             <div class="cert-footer">
               <div class="cert-sig">
-                <div class="cert-sig-name">Elin Hartmann</div>
+                <div class="cert-sig-name">Lucie Phillips</div>
                 <div class="cert-sig-line" />
-                <div class="cert-sig-title-text">Elin Hartmann</div>
-                <div class="cert-sig-role">Head of Sedna Academy</div>
+                <div class="cert-sig-title-text">Lucie Phillips</div>
+                <div class="cert-sig-role">Chief Operating Officer</div>
               </div>
               <div class="cert-seal-block">
                 <div class="cert-seal">
@@ -137,10 +137,10 @@ const tierLabel = computed(() => {
                 <div class="cert-issued">Issued {{ issuedDate }}</div>
               </div>
               <div class="cert-sig">
-                <div class="cert-sig-name">Marcus Vela</div>
+                <div class="cert-sig-name">Nassia Katroutsou</div>
                 <div class="cert-sig-line" />
-                <div class="cert-sig-title-text">Marcus Vela</div>
-                <div class="cert-sig-role">VP, Customer Education</div>
+                <div class="cert-sig-title-text">Nassia Katroutsou</div>
+                <div class="cert-sig-role">Training Manager</div>
               </div>
             </div>
           </div>
