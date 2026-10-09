@@ -23,3 +23,6 @@ sedna-backups/
 
 # Uploaded images (local-disk storage, dev)
 backend/uploads/
+
+# Frontend build output
+frontend/dist/

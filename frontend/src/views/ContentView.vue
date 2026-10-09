@@ -35,6 +35,7 @@ const moduleForm = ref({
   title: '', module_type: 'v', duration_mins: 0, product: 'vms',
   is_placeholder: false, sort_order: 0, description: '',
   learn_items: [] as string[], video_url: '', transcript: '', rich_content: '',
+  audio_url: null as string | null,
 })
 const newLearnItem = ref('')
 
@@ -184,6 +185,7 @@ function openNewModule(tierId: number) {
     title: '', module_type: 'v', duration_mins: 0, product: selectedPath.value?.products?.[0] ?? 'vms',
     is_placeholder: false, sort_order: (tierModules.value[tierId]?.length ?? 0),
     description: '', learn_items: [], video_url: '', transcript: '', rich_content: '',
+    audio_url: null,
   }
   moduleForm.value = loadDraft(draftKey.value) ?? defaults
   newLearnItem.value = ''
