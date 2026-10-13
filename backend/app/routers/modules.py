@@ -30,6 +30,10 @@ async def browse_modules(
     user: User = Depends(current_user),
 ):
     q = select(Module).options(selectinload(Module.tier))
+    if not user.is_admin:
+        # Placeholder outlines have no content yet: hidden from learners,
+        # still listed for admins who author them
+        q = q.where(Module.is_placeholder == False)
     if tier_id:
         q = q.where(Module.tier_id == tier_id)
     elif path_id:
@@ -53,6 +57,6 @@ async def get_module(
         select(Module).where(Module.id == module_id).options(selectinload(Module.tier))
     )
     module = result.scalar_one_or_none()
-    if not module:
+    if not module or (module.is_placeholder and not user.is_admin):
         raise HTTPException(status_code=404, detail="Module not found")
     return _with_role_id(module)

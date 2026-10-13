@@ -54,7 +54,7 @@ function maskUrl(url: string) {
     <div class="page-header">
       <div>
         <h1 class="page-title">Integrations</h1>
-        <p class="page-sub">Send Sedna Academy events to Slack, Discord, or any endpoint that accepts an incoming webhook.</p>
+        <p class="page-sub">Send Sedna Learning Hub events to Slack, Discord, or any endpoint that accepts an incoming webhook.</p>
       </div>
       <button class="btn btn-primary" @click="openAdd">
         <i class="ti ti-plus" /> Add webhook
@@ -132,53 +132,53 @@ function maskUrl(url: string) {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 900px; margin: 0 auto; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; max-width: 480px; }
+.page { padding: 40px 24px 72px; max-width: 900px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; max-width: 480px; }
 
 .hint-card {
   display: flex; align-items: flex-start; gap: 12px;
   background: var(--purple-subtle); border-radius: 10px;
   padding: 14px 16px; margin-bottom: 20px;
-  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+  font-size: 14px; color: var(--text-secondary); line-height: 1.5;
 }
 .hint-card > i { font-size: 20px; color: var(--purple); flex-shrink: 0; margin-top: 1px; }
-.hint-card a { color: var(--purple); font-weight: 600; }
+.hint-card a { color: var(--purple); font-weight: 500; }
 
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-secondary); }
 tr:last-child td { border-bottom: none; }
-.mono { font-family: monospace; font-size: 12.5px; }
+.mono { font-family: monospace; font-size: 14px; }
 .empty-row { color: var(--text-muted); text-align: center; padding: 32px; }
 .actions-cell { width: 40px; }
 
 .event-badge {
-  display: inline-block; font-size: 10.5px; font-weight: 600;
+  display: inline-block; font-size: 12px; font-weight: 500;
   background: var(--purple-subtle); color: var(--purple);
   padding: 2px 8px; border-radius: 100px; margin: 2px 4px 2px 0;
 }
 
 .status-toggle {
-  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px;
-  border: none; cursor: pointer; background: #F3F2F6; color: var(--text-muted);
+  font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 100px;
+  border: none; cursor: pointer; background: #F1F2F4; color: var(--text-muted);
 }
 .status-toggle.active { background: var(--green-bg); color: var(--green); }
 
-.icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 14px; }
-.icon-btn.danger:hover { color: #D32F2F; background: #FFEBEE; }
+.icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 15px; }
+.icon-btn.danger:hover { color: #B0322B; background: #FBE0DE; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(26,22,34,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal { background: var(--surface); border-radius: 14px; padding: 28px; width: 440px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 64px rgba(26,22,34,0.2); max-height: 85vh; overflow-y: auto; }
-.modal-title { font-size: 17px; font-weight: 800; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(11,11,15,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: var(--surface); border-radius: 14px; padding: 28px; width: 440px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 64px rgba(11,11,15,0.2); max-height: 85vh; overflow-y: auto; }
+.modal-title { font-size: 17px; font-weight: 500; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.label { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
 .hint { font-weight: 400; color: var(--text-muted); }
-.input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+.input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; }
 .input:focus { border-color: var(--purple); }
 .event-check-list { display: flex; flex-direction: column; gap: 8px; }
-.event-check { display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: monospace; cursor: pointer; }
+.event-check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-family: monospace; cursor: pointer; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
 </style>

@@ -92,8 +92,11 @@ async def org_analytics(
     for c in cert_result.scalars().all():
         certs_by_user[c.user_id] = certs_by_user.get(c.user_id, 0) + 1
 
-    # Total modules available
-    total_modules_result = await db.execute(select(func.count(Module.id)))
+    # Total modules available: placeholders have no content yet and can't be
+    # completed, so counting them would understate every completion rate
+    total_modules_result = await db.execute(
+        select(func.count(Module.id)).where(Module.is_placeholder == False)
+    )
     total_modules = total_modules_result.scalar() or 1
 
     # Engagement risk: learners with 0 activity in 14 days

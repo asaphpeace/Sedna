@@ -148,8 +148,8 @@ async function toggleSave() {
 
 const TYPE_ICON: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const TYPE_LABEL: Record<string, string> = { v: 'Video', a: 'Article', l: 'Link', p: 'Podcast', s: 'Slides' }
-const TYPE_PILL_BG: Record<string, string> = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
-const TYPE_PILL_FG: Record<string, string> = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
+const TYPE_PILL_BG: Record<string, string> = { v: '#ECDEFE', a: '#FBEDC8', l: '#C5D9FE', p: '#FBE0DE', s: '#D3F4DE' }
+const TYPE_PILL_FG: Record<string, string> = { v: '#7A3FE5', a: '#633806', l: '#4D2BD3', p: '#B0322B', s: '#1F8A5B' }
 
 function moduleIcon(type: string) {
   return TYPE_ICON[type] ?? 'ti-file-text'
@@ -523,7 +523,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
               </div>
             </div>
             <div class="mod-meta-row">
-              <span class="pill" :style="{ background: TYPE_PILL_BG[module.module_type] ?? '#FBF1E3', color: TYPE_PILL_FG[module.module_type] ?? '#B26A00' }">
+              <span class="pill" :style="{ background: TYPE_PILL_BG[module.module_type] ?? '#FBEDC8', color: TYPE_PILL_FG[module.module_type] ?? '#633806' }">
                 <i :class="['ti', moduleIcon(module.module_type)]" />
                 {{ TYPE_LABEL[module.module_type] ?? 'Article' }}
               </span>
@@ -619,21 +619,20 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
           <!-- Progress card -->
           <div v-if="!isPreview" class="rail-progress-card">
-            <div class="rpc-blob" />
             <div class="rpc-inner">
               <div class="rpc-ring">
                 <svg viewBox="0 0 56 56" width="58" height="58">
-                  <circle cx="28" cy="28" :r="CIRCLE_R" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="6" />
+                  <circle cx="28" cy="28" :r="CIRCLE_R" fill="none" stroke="#ECDEFE" stroke-width="6" />
                   <circle
                     cx="28" cy="28" :r="CIRCLE_R" fill="none"
-                    stroke="#6E2BF0" stroke-width="6"
+                    stroke="#7A3FE5" stroke-width="6"
                     stroke-linecap="round"
                     :stroke-dasharray="CIRCLE_C"
                     :stroke-dashoffset="circleOffset"
                     transform="rotate(-90 28 28)"
                     style="transition: stroke-dashoffset 0.5s ease"
                   />
-                  <text x="28" y="32" text-anchor="middle" fill="#fff" font-size="11" font-weight="800" font-family="Hanken Grotesk, sans-serif">{{ pathPct }}%</text>
+                  <text x="28" y="32" text-anchor="middle" fill="#0B0B0F" font-size="11" font-weight="500" font-family="Helvetica Neue, sans-serif">{{ pathPct }}%</text>
                 </svg>
               </div>
               <div class="rpc-text">
@@ -669,7 +668,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
                 <div class="tier-icon" :class="moduleDoneState(m) ? 'done' : m.id === module.id ? 'active' : 'default'">
                   <i v-if="moduleDoneState(m)" class="ti ti-check" />
                   <i v-else-if="m.id === module.id" class="ti ti-player-play-filled" />
-                  <span v-else style="font-size:11px;font-weight:700">{{ tierModules.indexOf(m) + 1 }}</span>
+                  <span v-else style="font-size:11px;font-weight: 500">{{ tierModules.indexOf(m) + 1 }}</span>
                 </div>
                 <div class="tier-item-body">
                   <div class="tier-item-title" :class="{ 'text-purple': m.id === module.id }">{{ m.title }}</div>
@@ -732,7 +731,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .preview-banner {
   display: flex; align-items: center; gap: 8px;
   background: var(--purple-subtle); color: var(--purple);
-  font-size: 13px; font-weight: 600;
+  font-size: 14px; font-weight: 500;
   padding: 10px 28px;
 }
 
@@ -772,7 +771,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .podcast-wrap.video-wrap-real { border-radius: 12px; }
 .podcast-player {
   display: flex; flex-direction: column; align-items: center; gap: 18px;
-  padding: 40px 28px; background: linear-gradient(160deg, #1A0A3C 0%, #0F0A1A 60%);
+  padding: 40px 28px; background: #15161B;
 }
 .podcast-icon {
   width: 64px; height: 64px; border-radius: 50%;
@@ -787,13 +786,13 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #1A0A3C 0%, #0F0A1A 60%);
+  background: #15161B;
 }
 .video-badge {
   position: absolute; top: 14px; left: 16px;
   background: rgba(255,255,255,0.12);
   color: rgba(255,255,255,0.75);
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.8px;
   padding: 4px 10px; border-radius: 20px; backdrop-filter: blur(4px);
 }
 .video-play-btn {
@@ -806,7 +805,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .video-play-btn:hover { background: rgba(255,255,255,0.28); }
 .video-resume {
   position: absolute; bottom: 14px;
-  font-size: 12px; color: rgba(255,255,255,0.6);
+  font-size: 13px; color: rgba(255,255,255,0.6);
 }
 .video-seekbar {
   height: 3px; background: rgba(255,255,255,0.15); cursor: pointer;
@@ -822,19 +821,19 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   font-size: 15px; padding: 5px; border-radius: 6px; cursor: pointer; font-family: inherit;
 }
 .vc-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
-.vc-speed { font-size: 12px; font-weight: 700; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
-.vc-time { font-size: 12px; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; margin-left: 6px; }
+.vc-speed { font-size: 13px; font-weight: 500; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
+.vc-time { font-size: 13px; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; margin-left: 6px; }
 
 /* ── Article header (replaces video console for text modules) ──────────── */
 .article-header { padding: 20px 28px 0; }
 .article-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .article-eyebrow {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
+  font-size: 13px; font-weight: 500; letter-spacing: 0.6px;
   color: var(--purple);
 }
 .listen-toggle {
   display: flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 600; color: var(--purple);
+  font-size: 13px; font-weight: 500; color: var(--purple);
   background: var(--purple-subtle); border: none; border-radius: 100px;
   padding: 4px 11px; cursor: pointer; flex-shrink: 0;
 }
@@ -857,6 +856,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   color: var(--text-primary);
   line-height: 1.75;
   max-width: 680px;
+  min-width: 0; /* flex child: let wide formulas and tables scroll instead of widening the page */
 }
 .article-body :deep(> *:first-child) { margin-top: 0; }
 .article-body :deep(> *:last-child) { margin-bottom: 0; }
@@ -866,7 +866,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .article-body :deep(h1),
 .article-body :deep(h2),
 .article-body :deep(h3) {
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: -0.3px;
   color: var(--text-primary);
   margin: 32px 0 12px;
@@ -907,18 +907,18 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   border-radius: 50%;
   background: var(--purple-subtle);
   color: var(--purple);
-  font-size: 12px; font-weight: 700;
+  font-size: 13px; font-weight: 500;
   display: flex; align-items: center; justify-content: center;
 }
 
-.article-body :deep(strong) { font-weight: 700; color: var(--text-primary); }
+.article-body :deep(strong) { font-weight: 500; color: var(--text-primary); }
 .article-body :deep(em) { font-style: italic; }
 
 .article-body :deep(a) {
   color: var(--purple);
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
-  border-bottom: 1px solid rgba(110,43,240,0.35);
+  border-bottom: 1px solid rgba(122,63,229,0.35);
 }
 .article-body :deep(a:hover) { border-bottom-color: var(--purple); }
 
@@ -937,27 +937,27 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   padding: 14px 16px;
   border-radius: 10px;
   border: 1px solid transparent;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
 }
 .article-body :deep(.callout p) { margin: 0; }
 .article-body :deep(.callout-head) {
   display: flex; align-items: center; gap: 7px;
-  font-weight: 700; font-size: 13px;
+  font-weight: 500; font-size: 14px;
   margin-bottom: 6px;
 }
 .article-body :deep(.callout-tip) {
   background: var(--purple-subtle);
-  border-color: rgba(110,43,240,0.2);
+  border-color: rgba(122,63,229,0.2);
   color: var(--text-secondary);
 }
 .article-body :deep(.callout-tip .callout-head) { color: var(--purple); }
 .article-body :deep(.callout-warning) {
-  background: #FBF1E3;
+  background: #FBEDC8;
   border-color: rgba(178,106,0,0.25);
   color: var(--text-secondary);
 }
-.article-body :deep(.callout-warning .callout-head) { color: #B26A00; }
+.article-body :deep(.callout-warning .callout-head) { color: #633806; }
 .article-body :deep(.callout-note) {
   background: var(--surface);
   border-color: var(--border);
@@ -967,7 +967,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
 .article-body :deep(code) {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 13px;
+  font-size: 14px;
   background: var(--purple-subtle);
   color: var(--purple);
   padding: 2px 6px;
@@ -976,7 +976,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .article-body :deep(pre) {
   margin: 0 0 16px;
   padding: 14px 16px;
-  background: #1A1622;
+  background: #0B0B0F;
   border-radius: 10px;
   overflow-x: auto;
 }
@@ -984,7 +984,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   background: none;
   color: #E8E3F5;
   padding: 0;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -1004,7 +1004,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   width: 100%;
   border-collapse: collapse;
   margin: 0 0 16px;
-  font-size: 13.5px;
+  font-size: 15px;
 }
 .article-body :deep(th),
 .article-body :deep(td) {
@@ -1012,27 +1012,32 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   padding: 8px 12px;
   border: 1px solid var(--border);
 }
-.article-body :deep(th) { background: var(--surface); font-weight: 700; }
+.article-body :deep(th) { background: var(--surface); font-weight: 500; }
+@media (max-width: 640px) {
+  .article-body :deep(table) { display: block; overflow-x: auto; }
+  .article-body :deep(th),
+  .article-body :deep(td) { min-width: 140px; }
+}
 
 /* ── Module header ────────────────────────────────────── */
 .mod-header { padding: 20px 28px 0; }
 .mod-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
-.mod-title { font-size: 20px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.3; flex: 1; }
+.mod-title { font-size: 20px; font-weight: 500; letter-spacing: -0.4px; line-height: 1.3; flex: 1; }
 .mod-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-.save-btn { font-size: 13px; }
-.done-badge { display: flex; align-items: center; gap: 5px; font-size: 13.5px; font-weight: 600; color: var(--green); }
-.next-lesson-btn { font-size: 13px; animation: fade-in-up 0.25s ease; }
+.save-btn { font-size: 14px; }
+.done-badge { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 500; color: var(--green); }
+.next-lesson-btn { font-size: 14px; animation: fade-in-up 0.25s ease; }
 .tier-done-badge {
   display: flex; align-items: center; gap: 5px;
-  font-size: 12.5px; font-weight: 600; color: var(--purple);
+  font-size: 14px; font-weight: 500; color: var(--purple);
   animation: fade-in-up 0.25s ease;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-.mod-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-muted); flex-wrap: wrap; }
+.mod-meta-row { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--text-muted); flex-wrap: wrap; }
 .meta-sep { color: var(--border-mid); }
 .mod-dur, .mod-tier-label { display: flex; align-items: center; gap: 4px; }
-.pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 12.5px; font-weight: 500; }
 
 /* ── Tabs ─────────────────────────────────────────────── */
 .mod-tabs {
@@ -1042,54 +1047,48 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 }
 .tab-btn {
   padding: 10px 0; margin-right: 24px;
-  font-size: 13px; font-weight: 500; color: var(--text-muted);
+  font-size: 14px; font-weight: 500; color: var(--text-muted);
   border: none; background: none; cursor: pointer;
   border-bottom: 2px solid transparent; margin-bottom: -1px;
   transition: color 0.12s, border-color 0.12s;
 }
-.tab-btn.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--purple); }
+.tab-btn.active { color: var(--text-primary); font-weight: 500; border-bottom-color: var(--purple); }
 .tab-btn:hover:not(.active) { color: var(--text-secondary); }
 
 /* ── Tab content ──────────────────────────────────────── */
 .tab-content { padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
-.mod-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+.mod-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.65; }
 
-.section-h { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+.section-h { font-size: 15px; font-weight: 500; margin-bottom: 14px; }
 .learn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.learn-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.45; }
+.learn-item { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text-secondary); line-height: 1.45; }
 
 .tab-empty { align-items: center; justify-content: center; min-height: 180px; color: var(--text-muted); text-align: center; }
 .tab-empty-icon { font-size: 32px; margin-bottom: 8px; color: var(--border-mid); display: block; }
-.tab-empty-text { font-size: 13px; color: var(--text-muted); }
+.tab-empty-text { font-size: 14px; color: var(--text-muted); }
 .notes-compose { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
-.notes-add-btn { font-size: 11.5px; font-weight: 700; color: #fff; background: var(--purple); padding: 5px 12px; border-radius: 8px; cursor: pointer; }
+.notes-add-btn { font-size: 12.5px; font-weight: 500; color: #fff; background: var(--purple); padding: 5px 12px; border-radius: 8px; cursor: pointer; }
 
 .quiz-cta {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  background: rgba(110,43,240,.07); border: 1px solid rgba(110,43,240,.22);
+  background: rgba(122,63,229,.07); border: 1px solid rgba(122,63,229,.22);
   border-radius: 12px; padding: 1.1rem 1.3rem;
 }
 .quiz-cta-left { display: flex; align-items: center; gap: 12px; }
 .quiz-cta-left > i { font-size: 28px; color: var(--purple); flex-shrink: 0; }
-.quiz-cta-title { font-weight: 600; font-size: 13.5px; }
-.quiz-cta-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.quiz-cta-title { font-weight: 500; font-size: 15px; }
+.quiz-cta-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
 /* ── Right rail ───────────────────────────────────────── */
 .rail-progress-card {
-  background: #1A1622; border-radius: 15px; padding: 18px;
-  position: relative; overflow: hidden;
-}
-.rpc-blob {
-  position: absolute; right: -30px; top: -30px;
-  width: 140px; height: 140px; border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(110,43,240,0.5), rgba(110,43,240,0) 70%);
+  background: var(--surface); border: 1px solid var(--lilac); border-radius: var(--radius-md); padding: 18px;
 }
 .rpc-inner { position: relative; display: flex; align-items: center; gap: 14px; }
 .rpc-ring { flex-shrink: 0; }
 .rpc-text {}
-.rpc-path-name { font-size: 13px; font-weight: 700; color: #fff; }
-.rpc-sub { font-size: 11.5px; color: rgba(255,255,255,0.55); margin-top: 2px; }
-.rpc-cert { font-size: 11.5px; font-weight: 600; color: #B79CFF; margin-top: 1px; }
+.rpc-path-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+.rpc-sub { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+.rpc-cert { font-size: 14px; font-weight: 500; color: var(--purple); margin-top: 1px; }
 
 .rail-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -1099,14 +1098,14 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px 10px;
 }
-.rail-card-title { font-size: 12.5px; font-weight: 700; }
+.rail-card-title { font-size: 14px; font-weight: 500; }
 .rail-autoplay {
-  font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 3px;
+  font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 3px;
   background: none; border: none; cursor: pointer; padding: 3px 6px; border-radius: 6px;
   transition: background 0.1s, color 0.1s;
 }
 .rail-autoplay:hover { background: var(--purple-subtle); }
-.rail-autoplay.active { color: var(--purple); font-weight: 600; }
+.rail-autoplay.active { color: var(--purple); font-weight: 500; }
 
 /* Tier list */
 .tier-list { display: flex; flex-direction: column; }
@@ -1115,48 +1114,50 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   padding: 10px 16px; border-top: 1px solid #F4F3F6;
   cursor: pointer; transition: background 0.1s;
 }
-.tier-item:hover { background: #FBFAFC; }
+.tier-item:hover { background: #FAFAF8; }
 .tier-item.current { background: var(--purple-subtle); }
 .tier-icon {
   width: 24px; height: 24px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px;
 }
 .tier-icon.done { background: var(--green); color: #fff; }
 .tier-icon.active { background: var(--purple); color: #fff; }
 .tier-icon.default { background: var(--border); color: var(--text-muted); }
 .tier-item-body { flex: 1; min-width: 0; }
-.tier-item-title { font-size: 12.5px; font-weight: 500; line-height: 1.35; color: var(--text-primary); }
-.tier-item-title.text-purple { color: var(--purple); font-weight: 600; }
-.tier-item-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
-.tier-empty { padding: 12px 16px; font-size: 12.5px; color: var(--text-muted); }
+.tier-item-title { font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--text-primary); }
+.tier-item-title.text-purple { color: var(--purple); font-weight: 500; }
+.tier-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
+.tier-empty { padding: 12px 16px; font-size: 14px; color: var(--text-muted); }
 
 /* Chapters */
 .chapter-list { display: flex; flex-direction: column; padding: 4px 8px 10px; }
 .chapter-row { display: flex; align-items: center; gap: 11px; padding: 8px 8px; border-radius: 8px; cursor: pointer; transition: background 0.1s; }
-.chapter-row:hover { background: #FBFAFC; }
+.chapter-row:hover { background: #FAFAF8; }
 .chapter-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-mid); flex-shrink: 0; }
 .chapter-dot.active { background: var(--purple); }
-.chapter-label { flex: 1; font-size: 12.5px; color: var(--text-secondary); line-height: 1.35; }
-.chapter-active { color: var(--text-primary); font-weight: 600; }
-.chapter-time { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.chapter-label { flex: 1; font-size: 14px; color: var(--text-secondary); line-height: 1.35; }
+.chapter-active { color: var(--text-primary); font-weight: 500; }
+.chapter-time { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ── TOC (article "On this page") ────────────────────────── */
 .toc-list { display: flex; flex-direction: column; padding: 4px 8px 10px; gap: 1px; }
 .toc-item {
   text-align: left; background: none; border: none; cursor: pointer;
   padding: 6px 8px; border-radius: 8px;
-  font-size: 12.5px; color: var(--text-muted); line-height: 1.4;
+  font-size: 14px; color: var(--text-muted); line-height: 1.4;
   border-left: 2px solid transparent;
   transition: background 0.1s, color 0.1s;
 }
-.toc-item:hover { background: #FBFAFC; color: var(--text-secondary); }
-.toc-item.toc-h3 { padding-left: 20px; font-size: 12px; }
-.toc-item.active { color: var(--purple); font-weight: 600; border-left-color: var(--purple); background: var(--purple-subtle); }
+.toc-item:hover { background: #FAFAF8; color: var(--text-secondary); }
+.toc-item.toc-h3 { padding-left: 20px; font-size: 13px; }
+.toc-item.active { color: var(--purple); font-weight: 500; border-left-color: var(--purple); background: var(--purple-subtle); }
 
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 900px) {
-  .mod-layout { flex-direction: column; }
+  .mod-layout { flex-direction: column; align-items: stretch; }
   .mod-main { border-right: none; }
+  .mod-title-row { flex-direction: column; }
+  .mod-actions { flex-wrap: wrap; }
   .mod-rail { width: 100%; position: static; max-height: none; border-top: 1px solid var(--border); }
   .learn-grid { grid-template-columns: 1fr; }
 }

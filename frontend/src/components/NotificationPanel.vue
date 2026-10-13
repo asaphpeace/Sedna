@@ -120,10 +120,10 @@ onUnmounted(() => document.removeEventListener('click', outsideClick))
 .notif-btn:hover { background: var(--surface); }
 .badge {
   position: absolute; top: -4px; right: -4px;
-  background: #EF4444; color: #fff; font-size: .65rem;
+  background: #E6564E; color: #fff; font-size: .65rem;
   min-width: 16px; height: 16px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  padding: 0 3px; font-weight: 700;
+  padding: 0 3px; font-weight: 500;
 }
 
 .dropdown {
@@ -136,7 +136,7 @@ onUnmounted(() => document.removeEventListener('click', outsideClick))
 .dropdown-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: .875rem 1rem; border-bottom: 1px solid var(--border);
-  font-weight: 600; font-size: .9rem;
+  font-weight: 500; font-size: .9rem;
 }
 .mark-all { background: none; border: none; cursor: pointer; color: var(--purple); font-size: .8rem; }
 .loading, .empty { text-align: center; padding: 2rem; color: var(--text-muted); }
@@ -152,7 +152,7 @@ onUnmounted(() => document.removeEventListener('click', outsideClick))
   position: relative;
 }
 .notif-item:hover { background: rgba(0,0,0,.04); }
-.notif-item.unread { background: rgba(110,43,240,.04); }
+.notif-item.unread { background: rgba(122,63,229,.04); }
 .notif-item + .notif-item { border-top: 1px solid var(--border); }
 .notif-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
 .notif-content { flex: 1; min-width: 0; }

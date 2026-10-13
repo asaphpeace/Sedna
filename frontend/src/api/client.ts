@@ -13,7 +13,11 @@ client.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      // Public Hub pages try the signed-in catalogue first and fall back
+      // quietly; everywhere else an expired session goes to sign-in
+      if (!err.config?.skipAuthRedirect) {
+        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname)
+      }
     }
     return Promise.reject(err)
   }

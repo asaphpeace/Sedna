@@ -45,15 +45,15 @@ const overall = computed(() => {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 700px; margin: 0 auto; }
-.page-header { margin-bottom: 28px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page { padding: 40px 24px 72px; max-width: 700px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .paths-list { display: flex; flex-direction: column; gap: 0; }
 .path-row { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; border-bottom: 1px solid var(--border); text-decoration: none; }
 .path-row:last-child { border-bottom: none; }
 .path-info { display: flex; justify-content: space-between; align-items: baseline; }
-.path-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.path-pct { font-size: 13px; font-weight: 700; }
-.path-sub { font-size: 12px; color: var(--text-muted); }
+.path-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+.path-pct { font-size: 14px; font-weight: 500; }
+.path-sub { font-size: 13px; color: var(--text-muted); }
 </style>

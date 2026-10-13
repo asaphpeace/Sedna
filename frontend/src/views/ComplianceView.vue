@@ -15,8 +15,8 @@ onMounted(async () => {
 const STATUS_META: Record<string, { label: string; bg: string; fg: string }> = {
   complete: { label: 'Complete', bg: 'var(--green-bg)', fg: 'var(--green)' },
   in_progress: { label: 'In progress', bg: 'var(--purple-subtle)', fg: 'var(--purple)' },
-  overdue: { label: 'Overdue', bg: '#FCE8E8', fg: '#C0392B' },
-  not_started: { label: 'Not started', bg: '#F3F2F6', fg: 'var(--text-muted)' },
+  overdue: { label: 'Overdue', bg: '#FBE0DE', fg: '#B0322B' },
+  not_started: { label: 'Not started', bg: '#F1F2F4', fg: 'var(--text-muted)' },
 }
 
 const filtered = computed(() =>
@@ -102,32 +102,32 @@ async function removeAssignment(id: number) {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 1000px; margin: 0 auto; }
-.page-header { margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page { padding: 40px 24px 72px; max-width: 1000px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 
 .summary-row { display: flex; gap: 12px; margin-bottom: 18px; }
 .summary-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.summary-card.warn { border-color: #C0392B; }
-.summary-num { font-size: 24px; font-weight: 800; }
-.summary-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.summary-card.warn { border-color: #B0322B; }
+.summary-num { font-size: 24px; font-weight: 500; }
+.summary-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
 .filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-.chip { font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); }
+.chip { font-size: 14px; font-weight: 500; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); }
 .chip.active { background: var(--purple); color: #fff; border-color: var(--purple); }
 
-.empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
+.empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
-.mandatory-tag { font-size: 10.5px; font-weight: 700; color: #B26A00; background: #FBF1E3; padding: 2px 7px; border-radius: 100px; margin-left: 6px; }
-.status-pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+.mandatory-tag { font-size: 12px; font-weight: 500; color: #633806; background: #FBEDC8; padding: 2px 7px; border-radius: 100px; margin-left: 6px; }
+.status-pill { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
 .progress-track { width: 100px; height: 5px; border-radius: 100px; background: var(--border); overflow: hidden; }
 .progress-fill { height: 100%; background: var(--purple); }
 .actions-cell { text-align: right; }
 .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px; }
-.icon-btn:hover { color: #C0392B; }
+.icon-btn:hover { color: #B0322B; }
 </style>

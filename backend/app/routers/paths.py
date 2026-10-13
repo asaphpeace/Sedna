@@ -10,25 +10,17 @@ from app.schemas.content import LearningRoleOut, LearningRoleSummary
 from app.services.deps import current_user
 
 router = APIRouter(prefix="/paths", tags=["paths"])
+public_router = APIRouter(prefix="/public", tags=["public"])
 
 
-@router.get("", response_model=list[LearningRoleSummary])
-async def list_paths(
-    db: AsyncSession = Depends(get_db),
-    user: User = Depends(current_user),
-):
-    result = await db.execute(
-        select(LearningRole)
-        .options(selectinload(LearningRole.tiers).selectinload(Tier.modules))
-        .order_by(LearningRole.sort_order)
-    )
-    roles = result.scalars().all()
+def _summaries(roles, audience: str | None = None) -> list[LearningRoleSummary]:
     out = []
     for r in roles:
-        # Placeholder modules (title/structure only, no real content yet —
-        # e.g. the Veson University curriculum import) don't count as
-        # browsable content. A course where every module is still a
-        # placeholder is exactly as "not ready" as one with zero modules.
+        if audience and r.audience != audience:
+            continue
+        # Placeholder modules (title/structure only, no real content yet)
+        # don't count as browsable content. A course where every module is
+        # still a placeholder is exactly as "not ready" as one with zero modules.
         real_mod_count = sum(
             1 for t in r.tiers for m in t.modules if not m.is_placeholder
         )
@@ -44,6 +36,30 @@ async def list_paths(
     return out
 
 
+async def _load_roles(db: AsyncSession):
+    result = await db.execute(
+        select(LearningRole)
+        .options(selectinload(LearningRole.tiers).selectinload(Tier.modules))
+        .order_by(LearningRole.sort_order)
+    )
+    return result.scalars().all()
+
+
+@public_router.get("/catalog", response_model=list[LearningRoleSummary])
+async def public_catalog(db: AsyncSession = Depends(get_db)):
+    """Customer-facing courses with real content, for the public Hub pages.
+    No sign-in needed; internal staff courses are left out."""
+    return _summaries(await _load_roles(db), audience="customer")
+
+
+@router.get("", response_model=list[LearningRoleSummary])
+async def list_paths(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    return _summaries(await _load_roles(db))
+
+
 @router.get("/{role_id}", response_model=LearningRoleOut)
 async def get_path(
     role_id: int,
@@ -56,7 +72,12 @@ async def get_path(
         .options(selectinload(LearningRole.tiers).selectinload(Tier.modules))
     )
     role = result.scalar_one_or_none()
-    if not role:
+    # A course that is still all placeholder outlines is hidden from learners,
+    # same as in the list above; admins can still open it
+    all_placeholder = role is not None and not any(
+        not m.is_placeholder for t in role.tiers for m in t.modules
+    )
+    if not role or (all_placeholder and not user.is_admin):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Path not found")
     return role
