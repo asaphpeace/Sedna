@@ -9,7 +9,7 @@ const certs = computed(() => app.certs)
 <template>
   <div class="page">
     <div class="page-header">
-      <h1 class="page-title">Certifications</h1>
+      <h1 class="page-title">Certificates</h1>
       <p class="page-sub">{{ certs.length }} certificate{{ certs.length !== 1 ? 's' : '' }} earned</p>
     </div>
 

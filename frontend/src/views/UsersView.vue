@@ -162,7 +162,7 @@ async function saveEdit() {
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
 .users-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-secondary); }

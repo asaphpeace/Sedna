@@ -26,7 +26,7 @@ const prodColor: Record<string, { bg: string; fg: string }> = {
     <div class="chip-group">
       <button v-for="p in ['', 'vms', 'stream', 'academy']" :key="p"
         class="chip" :class="{ 'chip--active': filter === p }" @click="filter = p">
-        {{ p === '' ? 'All' : p === 'vms' ? 'VMS' : p === 'stream' ? 'Stream' : 'Academy' }}
+        {{ p === '' ? 'All' : p === 'vms' ? 'Sedna VMS' : p === 'stream' ? 'Sedna Email' : 'Learning Hub' }}
       </button>
     </div>
 
@@ -40,6 +40,7 @@ const prodColor: Record<string, { bg: string; fg: string }> = {
         <h3 class="release-title">{{ r.title }}</h3>
         <p class="release-desc">{{ r.description }}</p>
       </div>
+      <p v-if="!filtered.length" class="empty">No updates here yet. New releases and learning content will appear on this page.</p>
     </div>
   </div>
 </template>
@@ -55,6 +56,7 @@ const prodColor: Record<string, { bg: string; fg: string }> = {
 .chip--active { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bg); font-weight: 500; }
 .releases { display: flex; flex-direction: column; gap: 0; }
 .release-card { padding: 20px 0; border-bottom: 1px solid var(--border); }
+.empty { font-size: 15px; color: var(--text-secondary); padding: 20px 0; }
 .release-card:last-child { border-bottom: none; }
 .release-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
 .release-tag { font-size: 12.5px; font-weight: 500; padding: 3px 9px; border-radius: 6px; }

@@ -41,7 +41,7 @@ function buildHeatmap(raw: Record<string, number>) {
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h1>My Progress</h1>
+      <h1>My stats</h1>
     </div>
 
     <div v-if="loading" class="loading-state"><i class="ti ti-loader-2 spin" /></div>

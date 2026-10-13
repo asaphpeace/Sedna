@@ -118,7 +118,7 @@ async function removeAssignment(id: number) {
 .chip.active { background: var(--purple); color: #fff; border-color: var(--purple); }
 
 .empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }

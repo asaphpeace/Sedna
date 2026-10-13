@@ -48,7 +48,7 @@ const tierLabel = computed(() => {
 <template>
   <div class="page">
     <button class="back-btn" @click="router.push('/certs')">
-      <i class="ti ti-arrow-left" /> Certifications
+      <i class="ti ti-arrow-left" /> Certificates
     </button>
 
     <div v-if="!cert" class="empty">Certificate not found.</div>
@@ -171,7 +171,7 @@ const tierLabel = computed(() => {
 .copy-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 1px 3px; border-radius: 4px; }
 .copy-btn:hover { color: var(--purple); }
 .verify-link { color: var(--purple); font-weight: 500; }
-.actions-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.actions-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .action-btn { font-size: 12.5px; padding: 8px 14px; }
 
 /* Certificate card */

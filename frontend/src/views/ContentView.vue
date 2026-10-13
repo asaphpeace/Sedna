@@ -469,7 +469,7 @@ function pathStatus(path: any) {
 
 // Releases have their own product domain (includes "academy", which paths/
 // modules never use) — kept separate from the shared path/module PRODUCT_META.
-const releaseProdLabel: Record<string, string> = { vms: 'Dataloy VMS', stream: 'Sedna Stream', academy: 'Sedna Learning Hub' }
+const releaseProdLabel: Record<string, string> = { vms: 'Sedna VMS', stream: 'Sedna Email', academy: 'Sedna Learning Hub' }
 const typeLabel: Record<string, string> = { v: 'Video', a: 'Article', l: 'Link', p: 'Podcast', s: 'Slides' }
 const typeIcon:  Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
 const typeBg:   Record<string, string>  = { v: '#ECDEFE', a: '#FBEDC8', l: '#C5D9FE', p: '#FBE0DE', s: '#D3F4DE' }
@@ -757,8 +757,8 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
             <div>
               <label class="field-label">Product</label>
               <select v-model="moduleForm.product" class="field-input">
-                <option value="vms">Dataloy VMS</option>
-                <option value="stream">Sedna Stream</option>
+                <option value="vms">Sedna VMS</option>
+                <option value="stream">Sedna Email</option>
                 <option value="cross">Cross-product</option>
               </select>
             </div>
@@ -961,8 +961,8 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
             <div>
               <label class="field-label">Product</label>
               <select v-model="releaseForm.product" class="field-input">
-                <option value="vms">Dataloy VMS</option>
-                <option value="stream">Sedna Stream</option>
+                <option value="vms">Sedna VMS</option>
+                <option value="stream">Sedna Email</option>
                 <option value="academy">Sedna Learning Hub</option>
               </select>
             </div>
@@ -996,7 +996,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
 .tab.active { background: var(--purple); color: #fff; border-color: var(--purple); font-weight: 500; }
 
 /* Table */
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }

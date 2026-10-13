@@ -146,7 +146,7 @@ function maskUrl(url: string) {
 .hint-card > i { font-size: 20px; color: var(--purple); flex-shrink: 0; margin-top: 1px; }
 .hint-card a { color: var(--purple); font-weight: 500; }
 
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-secondary); }

@@ -77,6 +77,7 @@ const grouped = computed(() => {
 .activity-row:last-child { border-bottom: none; }
 .act-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .act-body { flex: 1; font-size: 14px; color: var(--text-secondary); }
+.act-verb { margin: 0 4px; }
 .act-name { font-weight: 500; color: var(--text-primary); }
 .act-target { color: var(--purple); font-weight: 500; }
 .act-time { font-size: 13px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }

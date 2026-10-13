@@ -30,7 +30,7 @@ const labels: Record<string, { title: string; desc: string }> = {
   weekly_digest:    { title: 'Weekly digest', desc: 'A summary of your team\'s learning activity every Monday.' },
   new_modules:      { title: 'New modules', desc: 'Notifications when new content is added to your paths.' },
   cert_reminders:   { title: 'Certificate reminders', desc: 'Reminders when you\'re close to completing a tier.' },
-  product_releases: { title: 'Product releases', desc: 'Release notes for VMS and Sedna Stream updates.' },
+  product_releases: { title: 'Product releases', desc: 'Release notes for Sedna VMS and Sedna Email.' },
   team_activity:    { title: 'Team activity', desc: 'Real-time notifications when teammates complete modules.' },
   marketing_emails: { title: 'Marketing emails', desc: 'Occasional product news and tips from Sedna.' },
 }

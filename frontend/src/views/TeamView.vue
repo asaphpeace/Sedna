@@ -227,7 +227,7 @@ async function submitAssignment() {
 .dept-count { color: var(--text-muted); font-size: 13px; }
 .dept-add-row { display: flex; gap: 8px; margin-top: 6px; }
 .field-input-sm { font-size: 14px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
 .team-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
