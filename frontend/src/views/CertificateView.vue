@@ -140,7 +140,7 @@ const tierLabel = computed(() => {
                 <div class="cert-sig-name">Nassia Katroutsou</div>
                 <div class="cert-sig-line" />
                 <div class="cert-sig-title-text">Nassia Katroutsou</div>
-                <div class="cert-sig-role">Training Manager</div>
+                <div class="cert-sig-role">Senior Education Manager</div>
               </div>
             </div>
           </div>
