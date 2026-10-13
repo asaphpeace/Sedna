@@ -4,7 +4,8 @@ import { analyticsApi } from '@/api'
 
 // Learning impact: Nassia's Reach and Health view across every company.
 // The smallest unit of value is a completed lesson.
-const period = ref('quarter')
+// Complete periods compare fairly, so open on the last full quarter
+const period = ref('last_quarter')
 const audience = ref('all')
 const orgId = ref<string>('')
 const product = ref<string>('')
@@ -49,6 +50,8 @@ function change(m: { value: number; previous: number }): { text: string; dir: 'u
   if (m.value === m.previous) return { text: 'No change', dir: 'flat' }
   if (!m.previous) return { text: 'New this period', dir: 'up' }
   const pct = Math.round(((m.value - m.previous) / m.previous) * 100)
+  // Big rises read better as a multiple than as a four-digit percentage
+  if (pct >= 200) return { text: `▲ ${(m.value / m.previous).toFixed(1)}× previous`, dir: 'up' }
   return { text: `${pct > 0 ? '▲' : '▼'} ${Math.abs(pct)}% vs previous`, dir: pct > 0 ? 'up' : 'down' }
 }
 
@@ -247,8 +250,7 @@ const exportIdle = () => download('learning-impact-idle-learners',
             </button>
           </div>
           <p class="att-line">
-            <strong>{{ data.attention.paths.length }}</strong> path{{ data.attention.paths.length === 1 ? '' : 's' }} where fewer than 20% of starters finish
-            <template v-if="data.attention.paths.length">: {{ data.attention.paths.map((p: any) => p.name).join(', ') }}</template>
+            <strong>{{ data.attention.paths.length }}</strong> path{{ data.attention.paths.length === 1 ? '' : 's' }} where fewer than 20% of starters finish<template v-if="data.attention.paths.length">: {{ data.attention.paths.map((p: any) => p.name).join(', ') }}</template>
           </p>
           <p class="att-line">
             <strong>{{ data.attention.idle_learners.length }}</strong> learner{{ data.attention.idle_learners.length === 1 ? '' : 's' }} with an unfinished path and nothing for {{ data.attention.idle_days }}+ days
