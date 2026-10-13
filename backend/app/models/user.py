@@ -13,6 +13,8 @@ class Organisation(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(100), unique=True)
+    # "sedna" for Sedna's own staff organisation, "customer" for client companies
+    kind: Mapped[str] = mapped_column(String(20), default="customer", server_default="customer")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     users: Mapped[list["User"]] = relationship(back_populates="organisation")

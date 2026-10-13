@@ -17,6 +17,7 @@ class UserOut(BaseModel):
     last_active_at: Optional[datetime]
     department_id: Optional[int] = None
     is_manager: bool = False
+    is_sedna_staff: bool = False
 
     model_config = {"from_attributes": True}
 

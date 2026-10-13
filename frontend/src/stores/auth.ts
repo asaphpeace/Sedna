@@ -13,6 +13,7 @@ export interface User {
   is_admin: boolean
   org_id: number
   is_manager?: boolean
+  is_sedna_staff?: boolean
 }
 
 export const useAuthStore = defineStore('auth', () => {

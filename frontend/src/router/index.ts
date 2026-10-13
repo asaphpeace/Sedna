@@ -36,6 +36,7 @@ const router = createRouter({
         { path: 'quiz', component: () => import('@/views/QuizView.vue') },
         { path: 'leaderboard', component: () => import('@/views/LeaderboardView.vue') },
         { path: 'stats', component: () => import('@/views/LearnerStatsView.vue') },
+        { path: 'impact', component: () => import('@/views/ImpactView.vue'), meta: { admin: true } },
         { path: 'analytics', component: () => import('@/views/AnalyticsView.vue'), meta: { admin: true } },
         { path: 'integrations', component: () => import('@/views/IntegrationsView.vue'), meta: { admin: true } },
       ],
