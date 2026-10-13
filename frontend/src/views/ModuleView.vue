@@ -856,6 +856,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   color: var(--text-primary);
   line-height: 1.75;
   max-width: 680px;
+  min-width: 0; /* flex child: let wide formulas and tables scroll instead of widening the page */
 }
 .article-body :deep(> *:first-child) { margin-top: 0; }
 .article-body :deep(> *:last-child) { margin-bottom: 0; }
@@ -1012,6 +1013,11 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   border: 1px solid var(--border);
 }
 .article-body :deep(th) { background: var(--surface); font-weight: 500; }
+@media (max-width: 640px) {
+  .article-body :deep(table) { display: block; overflow-x: auto; }
+  .article-body :deep(th),
+  .article-body :deep(td) { min-width: 140px; }
+}
 
 /* ── Module header ────────────────────────────────────── */
 .mod-header { padding: 20px 28px 0; }
@@ -1148,8 +1154,10 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 900px) {
-  .mod-layout { flex-direction: column; }
+  .mod-layout { flex-direction: column; align-items: stretch; }
   .mod-main { border-right: none; }
+  .mod-title-row { flex-direction: column; }
+  .mod-actions { flex-wrap: wrap; }
   .mod-rail { width: 100%; position: static; max-height: none; border-top: 1px solid var(--border); }
   .learn-grid { grid-template-columns: 1fr; }
 }
