@@ -18,10 +18,10 @@ onMounted(async () => {
 
 function heatmapColor(count: number) {
   if (!count) return 'var(--border)'
-  if (count >= 5) return '#6E2BF0'
-  if (count >= 3) return 'rgba(110,43,240,.7)'
-  if (count >= 2) return 'rgba(110,43,240,.45)'
-  return 'rgba(110,43,240,.2)'
+  if (count >= 5) return '#7A3FE5'
+  if (count >= 3) return 'rgba(122,63,229,.7)'
+  if (count >= 2) return 'rgba(122,63,229,.45)'
+  return 'rgba(122,63,229,.2)'
 }
 
 // Build last 35 days for heatmap display
@@ -72,12 +72,12 @@ function buildHeatmap(raw: Record<string, number>) {
           <div class="stat-label">Modules done</div>
         </div>
         <div class="stat-card">
-          <i class="ti ti-certificate" style="color: #B26A00" />
+          <i class="ti ti-certificate" style="color: #633806" />
           <div class="stat-num">{{ stats.certs_earned }}</div>
           <div class="stat-label">Certificates</div>
         </div>
         <div class="stat-card">
-          <i class="ti ti-flame" style="color: #EF4444" />
+          <i class="ti ti-flame" style="color: #E6564E" />
           <div class="stat-num">{{ gami.streak.current }}</div>
           <div class="stat-label">Day streak</div>
         </div>
@@ -134,8 +134,8 @@ function buildHeatmap(raw: Record<string, number>) {
 </template>
 
 <style scoped>
-.page-container { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
-.page-header h1 { font-size: 1.5rem; font-weight: 700; }
+.page-container { max-width: 720px; margin: 0 auto; padding: 40px 24px 72px; display: flex; flex-direction: column; gap: 1.25rem; }
+.page-header h1 { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -145,7 +145,7 @@ function buildHeatmap(raw: Record<string, number>) {
   background: var(--purple); color: #fff;
   border-radius: 14px; padding: 1.75rem;
 }
-.level-num { font-size: 2rem; font-weight: 800; }
+.level-num { font-size: 2rem; font-weight: 500; }
 .level-name { font-size: 1rem; opacity: .85; }
 .xp-info { font-size: .85rem; opacity: .7; margin-top: .25rem; }
 .level-right { flex: 1; }
@@ -157,15 +157,15 @@ function buildHeatmap(raw: Record<string, number>) {
 .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
 .stat-card i { font-size: 1.4rem; display: block; margin-bottom: .5rem; }
-.stat-num { font-size: 1.75rem; font-weight: 700; }
+.stat-num { font-size: 1.75rem; font-weight: 500; }
 .stat-label { font-size: .8rem; color: var(--text-muted); }
 
 .card.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
-.card.section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
+.card.section h3 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
 .card.section h3 i { color: var(--purple); }
 
 .streak-grid { display: flex; gap: 2rem; }
-.streak-val { font-size: 2.5rem; font-weight: 700; color: var(--purple); }
+.streak-val { font-size: 2.5rem; font-weight: 500; color: var(--purple); }
 .streak-lbl { font-size: .85rem; color: var(--text-muted); }
 
 .heatmap { display: grid; grid-template-columns: repeat(35, 1fr); gap: 3px; }
@@ -175,7 +175,7 @@ function buildHeatmap(raw: Record<string, number>) {
 .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
 .badge-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
 .badge-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); margin: 0 auto .5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; background-color: var(--bg); }
-.badge-name { font-weight: 600; font-size: .9rem; margin-bottom: .2rem; }
+.badge-name { font-weight: 500; font-size: .9rem; margin-bottom: .2rem; }
 .badge-desc { font-size: .8rem; color: var(--text-muted); }
 
 @media (max-width: 600px) {

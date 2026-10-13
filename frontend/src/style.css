@@ -1,39 +1,57 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --purple: #6E2BF0;
-  --purple-light: #8255F2;
-  --purple-dark: #5A1FD6;
-  --purple-bg: #F1EBFE;
-  --purple-subtle: #F6F4FB;
-  --green: #0E9E6E;
-  --green-bg: #E2F6EC;
-  --orange: #B26A00;
-  --orange-bg: #FBF1E3;
-  --teal: #0B8FB0;
-  --teal-bg: #E3F4F9;
-  --indigo: #4338CA;
-  --indigo-bg: #EEF0FD;
-  --text-primary: #1A1622;
-  --text-secondary: #5F5A6B;
-  --text-muted: #A39EAE;
-  --border: #ECEAF0;
-  --border-mid: #D8D4E0;
+  /* Sedna brand tokens (Nassia's Learning Hub design). Old variable names are
+     kept so every screen picks up the new palette without per-file edits. */
+  --purple: #7A3FE5;          /* sedna-purple-700: primary buttons, links, active */
+  --purple-light: #9054F8;    /* sedna-purple: logo mark, hero hue */
+  --purple-dark: #4B1FA8;     /* sedna-purple-dark: hover/pressed, text on lilac */
+  --purple-bg: #ECDEFE;       /* sedna-purple-100: tag fill, active row */
+  --purple-subtle: #F5EEFF;   /* sedna-purple-50: faint wash, hover */
+  --lilac: #DCC9FE;           /* lilac-tag: highlighted borders, brand chips */
+  --green: #1F8A5B;           /* mint-700 */
+  --green-bg: #D3F4DE;        /* mint-100 */
+  --orange: #633806;          /* text on butter */
+  --orange-bg: #FBEDC8;       /* butter-100 */
+  --teal: #4D2BD3;            /* sedna-indigo */
+  --teal-bg: #C5D9FE;         /* sky-tag */
+  --indigo: #4D2BD3;
+  --indigo-bg: #C5D9FE;
+  --coral: #B0322B;           /* coral-700: error text */
+  --coral-bg: #FBE0DE;        /* coral-100 */
+  --text-primary: #0B0B0F;    /* ink-1000 */
+  --text-secondary: #3A3B42;  /* ink-700 */
+  --text-muted: #6B6C75;      /* ink-500 */
+  --text-placeholder: #9598A1;/* ink-400 */
+  --border: #E4E5E9;          /* ink-200 */
+  --border-mid: #C2C4CB;      /* ink-300 */
+  --hairline: rgba(11, 11, 15, 0.08);
+  --row-hover: #F1F2F4;       /* ink-100 */
   --surface: #ffffff;
-  --bg: #F8F7FB;
-  --sidebar-w: 220px;
-  --topbar-h: 56px;
-  --radius: 10px;
-  --radius-sm: 7px;
-  --shadow: 0 1px 4px rgba(26,22,34,0.08);
-  --shadow-md: 0 4px 16px rgba(26,22,34,0.10);
+  --surface-2: #F7F6F3;
+  --bg: #FAFAF8;              /* paper */
+  --bg-warm: #F4F2EE;         /* paper-warm: section bands */
+  --font-sans: 'PP Mori', 'Helvetica Neue', Helvetica, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sidebar-w: 0px;
+  --topbar-h: 72px;
+  --content-max: 1180px;
+  --radius: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 6px 18px -6px rgba(11, 11, 15, 0.08), 0 1px 2px rgba(11, 11, 15, 0.04);
+  --shadow-popover: 0 12px 32px -8px rgba(11, 11, 15, 0.18), 0 0 0 1px rgba(11, 11, 15, 0.14);
 }
 
-html, body, #app { height: 100%; font-family: 'Hanken Grotesk', -apple-system, sans-serif; background: var(--bg); color: var(--text-primary); }
+html, body, #app { height: 100%; font-family: var(--font-sans); background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
 
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 input, textarea, select { font-family: inherit; }
+h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.012em; }
+::selection { background: var(--purple-subtle); }
+::placeholder { color: var(--text-placeholder); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -61,51 +79,76 @@ input, textarea, select { font-family: inherit; }
 .text-xl { font-size: 20px; }
 .text-2xl { font-size: 24px; }
 .font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.font-bold { font-weight: 700; }
-.font-extrabold { font-weight: 800; }
+.font-semibold { font-weight: 500; }
+.font-bold { font-weight: 500; }
+.font-extrabold { font-weight: 500; }
 .text-muted { color: var(--text-muted); }
 .text-secondary { color: var(--text-secondary); }
 .text-purple { color: var(--purple); }
 
+/* Eyebrow label: JetBrains Mono, uppercase, as in the design's section labels */
+.eyebrow {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 400;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+}
+.eyebrow--accent { color: var(--purple); }
+
+/* Page header shared by app screens */
+.page-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.page-header h1 { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); }
+
 /* Cards */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow);
 }
 
 /* Buttons */
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: 8px;
-  font-size: 13px; font-weight: 600;
-  transition: background 0.12s, opacity 0.12s;
-  cursor: pointer; border: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 20px; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 500;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+  cursor: pointer; border: 1px solid transparent;
 }
+.btn:disabled { opacity: 0.55; cursor: default; }
 .btn-primary { background: var(--purple); color: #fff; }
-.btn-primary:hover { background: var(--purple-dark); }
-.btn-ghost { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--purple-subtle); }
+.btn-primary:hover:not(:disabled) { background: var(--purple-dark); }
+.btn-ghost { background: var(--surface); color: var(--text-primary); border-color: var(--border-mid); }
+.btn-ghost:hover:not(:disabled) { background: var(--row-hover); }
+.btn-sm { min-height: 36px; padding: 0 14px; font-size: 14px; }
 
-/* Badge / pill */
-.pill {
+/* Tag (the design's small rectangular chips) */
+.pill, .tag {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 100px;
-  font-size: 11px; font-weight: 600;
+  padding: 4px 8px; border-radius: 4px;
+  font-size: 13px; font-weight: 400; line-height: 1.2;
 }
+
+/* Form inputs */
+.input {
+  min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--border-mid); border-radius: var(--radius-sm);
+  font-size: 15px; background: var(--surface); color: var(--text-primary);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-subtle); }
 
 /* Progress bar */
 .progress-bar {
-  height: 6px; border-radius: 3px; background: var(--border); overflow: hidden;
+  height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
 }
 .progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 
 /* Avatar */
 .avatar {
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-weight: 700; color: #fff; flex-shrink: 0;
+  border-radius: 50%; font-weight: 500; color: var(--purple-dark);
+  background: var(--purple-bg); flex-shrink: 0;
 }
 
 /* ── Mobile layout ──────────────────────────────────────────── */
@@ -197,7 +240,7 @@ input, textarea, select { font-family: inherit; }
   padding: .5rem 1rem;
   border-radius: 0 0 8px 8px;
   font-size: .875rem;
-  font-weight: 600;
+  font-weight: 500;
   z-index: 9999;
   transition: top .15s;
 }
@@ -212,4 +255,9 @@ input, textarea, select { font-family: inherit; }
 :focus-visible {
   outline: 2px solid var(--purple);
   outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .page-title, .page-header h1 { font-size: 30px !important; }
+  .page-sub { font-size: 15px !important; }
 }

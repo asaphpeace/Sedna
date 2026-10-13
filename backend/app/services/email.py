@@ -47,8 +47,8 @@ async def send_email(to: str, subject: str, html: str, text: Optional[str] = Non
 
 
 async def send_welcome_email(to: str, name: str):
-    await send_email(to, f"Welcome to Sedna Academy, {name.split()[0]}!", f"""
-    <h2>Welcome to Sedna Academy</h2>
+    await send_email(to, f"Welcome to Sedna Learning Hub, {name.split()[0]}!", f"""
+    <h2>Welcome to Sedna Learning Hub</h2>
     <p>Hi {name.split()[0]},</p>
     <p>Your account is ready. Start your first learning path and earn your first certificate.</p>
     <p><a href="{getattr(settings, 'app_url', 'http://localhost:5173')}/paths">Browse learning paths →</a></p>
@@ -74,10 +74,10 @@ async def send_near_cert_email(to: str, name: str, cert_name: str, modules_left:
 
 async def send_invite_email(to: str, name: str, inviter_name: str, invite_token: str, org_name: str = "your team"):
     accept_url = f"{getattr(settings, 'app_url', 'http://localhost:5173')}/accept-invite?token={invite_token}"
-    await send_email(to, f"{inviter_name} invited you to Sedna Academy", f"""
-    <h2>You've been invited to Sedna Academy</h2>
+    await send_email(to, f"{inviter_name} invited you to Sedna Learning Hub", f"""
+    <h2>You've been invited to Sedna Learning Hub</h2>
     <p>Hi {name.split()[0]},</p>
-    <p><strong>{inviter_name}</strong> has invited you to join {org_name} on Sedna Academy.</p>
+    <p><strong>{inviter_name}</strong> has invited you to join {org_name} on Sedna Learning Hub.</p>
     <p><a href="{accept_url}">Set your password and get started →</a></p>
     <p>This link expires in 7 days.</p>
     """)

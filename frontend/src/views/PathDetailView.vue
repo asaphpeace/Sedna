@@ -18,20 +18,20 @@ onMounted(async () => {
 
 const tierStateMeta = (tier: any) => {
   const prog = app.pathProgress.find(p => p.role_id === role.value?.id)
-  if (!prog) return { label: 'Not started', bg: '#F3F2F6', fg: '#A39EAE' }
+  if (!prog) return { label: 'Not started', bg: '#F1F2F4', fg: '#6B6C75' }
   const tierIdx = role.value?.tiers?.indexOf(tier)
   const tierDone = tier.modules.every((m: any) => app.moduleProgress[m.id]?.state === 'done')
-  if (tierDone) return { label: 'Completed', bg: '#E2F6EC', fg: '#0E7E58' }
+  if (tierDone) return { label: 'Completed', bg: '#D3F4DE', fg: '#1F8A5B' }
   const hasProg = tier.modules.some((m: any) => app.moduleProgress[m.id])
-  if (hasProg || tierIdx === 0) return { label: 'In progress', bg: '#F1EBFE', fg: '#6E2BF0' }
-  return { label: 'Locked', bg: '#F3F2F6', fg: '#A39EAE' }
+  if (hasProg || tierIdx === 0) return { label: 'In progress', bg: '#ECDEFE', fg: '#7A3FE5' }
+  return { label: 'Locked', bg: '#F1F2F4', fg: '#6B6C75' }
 }
 
 const modState = (m: any) => app.moduleProgress[m.id]?.state ?? 'not_started'
 
 const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text', l: 'ti-link', p: 'ti-microphone', s: 'ti-presentation' }
-const typeBg: Record<string, string>   = { v: '#F1EBFE', a: '#FBF1E3', l: '#E3F4F9', p: '#FCE8F3', s: '#E2F6EC' }
-const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8FB0', p: '#C2185B', s: '#0E9E6E' }
+const typeBg: Record<string, string>   = { v: '#ECDEFE', a: '#FBEDC8', l: '#C5D9FE', p: '#FBE0DE', s: '#D3F4DE' }
+const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2BD3', p: '#B0322B', s: '#1F8A5B' }
 </script>
 
 <template>
@@ -47,7 +47,7 @@ const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8F
         <h1 class="hero-title">{{ role.name }}</h1>
         <p class="hero-desc">{{ role.description }}</p>
         <div class="hero-meta">
-          <span class="pill" :style="{ background: '#F3F2F6', color: '#5F5A6B' }">
+          <span class="pill" :style="{ background: '#F1F2F4', color: '#5F5A6B' }">
             {{ role.audience === 'internal' ? 'Internal — Sedna Staff' : 'Customer Role' }}
           </span>
           <span v-for="prod in role.products" :key="prod" class="pill" :style="{ background: PRODUCT_META[prod]?.bg, color: PRODUCT_META[prod]?.color }">
@@ -104,12 +104,12 @@ const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8F
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 800px; margin: 0 auto; }
-.back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 20px; cursor: pointer; }
+.page { padding: 40px 24px 72px; max-width: 800px; margin: 0 auto; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-secondary); padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 20px; cursor: pointer; }
 .back-btn:hover { background: var(--purple-subtle); }
 .loading { color: var(--text-muted); }
 .hero { margin-bottom: 28px; }
-.hero-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.hero-title { font-size: 24px; font-weight: 500; letter-spacing: -0.5px; }
 .hero-desc { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
 .hero-meta { display: flex; align-items: center; gap: 7px; margin-top: 14px; flex-wrap: wrap; }
 .meta-dot { color: var(--border-mid); }
@@ -118,17 +118,17 @@ const typeFg: Record<string, string>   = { v: '#6E2BF0', a: '#B26A00', l: '#0B8F
 .tier { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .tier-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
 .tier-header:hover { background: var(--purple-subtle); }
-.tier-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.tier-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
 .tier-info { flex: 1; }
-.tier-name { font-size: 14px; font-weight: 700; }
+.tier-name { font-size: 14px; font-weight: 500; }
 .tier-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.tier-pill { font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 100px; }
+.tier-pill { font-size: 11.5px; font-weight: 500; padding: 3px 10px; border-radius: 100px; }
 .tier-chev { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
 .module-list { border-top: 1px solid var(--border); }
 .module-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background 0.1s; }
 .module-row:last-child { border-bottom: none; }
 .module-row:hover { background: var(--purple-subtle); }
-.mod-seq { width: 20px; font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-align: center; flex-shrink: 0; }
+.mod-seq { width: 20px; font-size: 11.5px; color: var(--text-muted); font-weight: 500; text-align: center; flex-shrink: 0; }
 .mod-type-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .mod-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .mod-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }

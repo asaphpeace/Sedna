@@ -16,7 +16,7 @@ onMounted(async () => {
   }
 })
 
-const medalColors = ['#F59E0B', '#9CA3AF', '#B45309']
+const medalColors = ['#633806', '#9CA3AF', '#B45309']
 </script>
 
 <template>
@@ -42,7 +42,7 @@ const medalColors = ['#F59E0B', '#9CA3AF', '#B45309']
           <span v-else class="rank-num">{{ entry.rank }}</span>
         </div>
         <div class="avatar-col">
-          <div class="avatar" :style="{ background: '#6E2BF0' }">
+          <div class="avatar" :style="{ background: '#7A3FE5' }">
             {{ entry.name.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase() }}
           </div>
         </div>
@@ -65,10 +65,10 @@ const medalColors = ['#F59E0B', '#9CA3AF', '#B45309']
 </template>
 
 <style scoped>
-.page-container { max-width: 640px; margin: 0 auto; padding: 2rem 1rem; }
-.page-header { margin-bottom: 2rem; }
-.page-header h1 { font-size: 1.5rem; font-weight: 700; }
-.page-sub { color: var(--text-muted); font-size: .9rem; margin-top: .25rem; }
+.page-container { max-width: 640px; margin: 0 auto; padding: 40px 24px 72px; }
+.page-header { margin-bottom: 32px; }
+.page-header h1 { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); }
 .loading-state i { font-size: 2rem; }
 .spin { animation: spin 1s linear infinite; }
@@ -83,20 +83,20 @@ const medalColors = ['#F59E0B', '#9CA3AF', '#B45309']
   border: 1px solid var(--border); border-radius: 10px;
   transition: border-color .15s;
 }
-.board-row.is-me { border-color: var(--purple); background: rgba(110,43,240,.05); }
+.board-row.is-me { border-color: var(--purple); background: rgba(122,63,229,.05); }
 .rank-col { width: 2rem; text-align: center; font-size: 1.2rem; flex-shrink: 0; }
-.rank-num { font-weight: 700; color: var(--text-muted); font-size: .9rem; }
+.rank-num { font-weight: 500; color: var(--text-muted); font-size: .9rem; }
 .avatar-col { flex-shrink: 0; }
 .avatar {
   width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: .8rem; font-weight: 700; color: #fff;
+  font-size: .8rem; font-weight: 500; color: #fff;
 }
 .info-col { flex: 1; min-width: 0; }
-.user-name { font-weight: 600; display: flex; align-items: center; gap: .5rem; }
+.user-name { font-weight: 500; display: flex; align-items: center; gap: .5rem; }
 .level-label { font-size: .8rem; color: var(--text-muted); display: block; }
 .you-tag { background: var(--purple); color: #fff; font-size: .65rem; padding: .1rem .35rem; border-radius: 4px; font-weight: 500; }
 .xp-col { text-align: right; flex-shrink: 0; }
-.xp-number { font-size: 1.1rem; font-weight: 700; color: var(--purple); display: block; }
+.xp-number { font-size: 1.1rem; font-weight: 500; color: var(--purple); display: block; }
 .xp-label { font-size: .75rem; color: var(--text-muted); }
 </style>

@@ -25,9 +25,8 @@ async def list_paths(
     roles = result.scalars().all()
     out = []
     for r in roles:
-        # Placeholder modules (title/structure only, no real content yet —
-        # e.g. the Veson University curriculum import) don't count as
-        # browsable content. A course where every module is still a
+        # Placeholder modules (title/structure only, no real content yet)
+        # don't count as browsable content. A course where every module is still a
         # placeholder is exactly as "not ready" as one with zero modules.
         real_mod_count = sum(
             1 for t in r.tiers for m in t.modules if not m.is_placeholder
@@ -56,7 +55,12 @@ async def get_path(
         .options(selectinload(LearningRole.tiers).selectinload(Tier.modules))
     )
     role = result.scalar_one_or_none()
-    if not role:
+    # A course that is still all placeholder outlines is hidden from learners,
+    # same as in the list above; admins can still open it
+    all_placeholder = role is not None and not any(
+        not m.is_placeholder for t in role.tiers for m in t.modules
+    )
+    if not role or (all_placeholder and not user.is_admin):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Path not found")
     return role

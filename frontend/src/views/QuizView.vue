@@ -215,7 +215,7 @@ function getOptionState(qId: number, optId: number) {
 .quiz-counter { font-size: .85rem; color: var(--text-muted); white-space: nowrap; }
 
 .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; }
-.question-text { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; }
+.question-text { font-size: 1.15rem; font-weight: 500; margin-bottom: 1.5rem; line-height: 1.5; }
 .options-list { display: flex; flex-direction: column; gap: .75rem; }
 .option-btn {
   display: flex; align-items: center; gap: .75rem;
@@ -224,8 +224,8 @@ function getOptionState(qId: number, optId: number) {
   text-align: left; font-size: .95rem; color: var(--text);
   transition: border-color .15s, background .15s;
 }
-.option-btn:hover { border-color: var(--purple); background: rgba(110,43,240,.06); }
-.option-btn.selected { border-color: var(--purple); background: rgba(110,43,240,.1); color: var(--purple); font-weight: 500; }
+.option-btn:hover { border-color: var(--purple); background: rgba(122,63,229,.06); }
+.option-btn.selected { border-color: var(--purple); background: rgba(122,63,229,.1); color: var(--purple); font-weight: 500; }
 .option-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; flex-shrink: 0; }
 .option-btn.selected .option-dot { background: var(--purple); border-color: var(--purple); }
 
@@ -233,7 +233,7 @@ function getOptionState(qId: number, optId: number) {
 .dots { display: flex; gap: .4rem; flex: 1; justify-content: center; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .15s; }
 .dot.active { background: var(--purple); }
-.dot.answered { background: rgba(110,43,240,.4); }
+.dot.answered { background: rgba(122,63,229,.4); }
 .dot.active.answered { background: var(--purple); }
 
 /* Result screen */
@@ -245,7 +245,7 @@ function getOptionState(qId: number, optId: number) {
 .result-card.passed .result-icon { color: var(--green); }
 .result-card.failed .result-icon { color: var(--text-muted); }
 .result-card h2 { font-size: 1.5rem; margin-bottom: .5rem; }
-.score-display { font-size: 4rem; font-weight: 700; color: var(--purple); line-height: 1; }
+.score-display { font-size: 4rem; font-weight: 500; color: var(--purple); line-height: 1; }
 .score-display span { font-size: 2rem; }
 .score-sub { color: var(--text-muted); margin-top: .25rem; }
 .xp-badge { display: inline-block; background: var(--purple); color: #fff; padding: .25rem .75rem; border-radius: 20px; font-size: .85rem; margin-top: 1rem; }
@@ -258,7 +258,7 @@ function getOptionState(qId: number, optId: number) {
 .review-options { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .75rem; }
 .review-opt { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: 6px; font-size: .9rem; }
 .review-opt.correct { background: rgba(14,158,110,.12); color: var(--green); }
-.review-opt.wrong { background: rgba(239,68,68,.1); color: #EF4444; }
+.review-opt.wrong { background: rgba(239,68,68,.1); color: #E6564E; }
 .review-opt i { font-size: .85rem; flex-shrink: 0; }
 .review-explanation { font-size: .875rem; color: var(--text-muted); padding: .5rem .75rem; background: rgba(0,0,0,.04); border-radius: 6px; display: flex; gap: .5rem; }
 .review-explanation i { color: var(--purple); flex-shrink: 0; margin-top: 2px; }

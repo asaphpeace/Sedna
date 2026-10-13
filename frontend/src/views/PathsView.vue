@@ -26,11 +26,11 @@ const progressMap = computed(() =>
 )
 
 const iconColor: Record<string, { bg: string; fg: string }> = {
-  purple: { bg: '#F1EBFE', fg: '#6E2BF0' },
-  orange: { bg: '#FBF1E3', fg: '#B26A00' },
-  green:  { bg: '#E2F6EC', fg: '#0E9E6E' },
-  blue:   { bg: '#E3F4F9', fg: '#0B8FB0' },
-  teal:   { bg: '#E3F4F9', fg: '#0B8FB0' },
+  purple: { bg: '#ECDEFE', fg: '#7A3FE5' },
+  orange: { bg: '#FBEDC8', fg: '#633806' },
+  green:  { bg: '#D3F4DE', fg: '#1F8A5B' },
+  blue:   { bg: '#C5D9FE', fg: '#4D2BD3' },
+  teal:   { bg: '#C5D9FE', fg: '#4D2BD3' },
   indigo: { bg: '#EEF0FD', fg: '#4338CA' },
 }
 </script>
@@ -64,8 +64,8 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
           :to="`/paths/${p.id}`"
           class="path-card"
         >
-          <div class="path-card-icon" :style="{ background: iconColor[p.color]?.bg ?? '#F1EBFE' }">
-            <i :class="['ti', p.icon]" :style="{ color: iconColor[p.color]?.fg ?? '#6E2BF0', fontSize: '22px' }" />
+          <div class="path-card-icon" :style="{ background: iconColor[p.color]?.bg ?? '#ECDEFE' }">
+            <i :class="['ti', p.icon]" :style="{ color: iconColor[p.color]?.fg ?? '#7A3FE5', fontSize: '22px' }" />
           </div>
           <div class="path-card-body">
             <div class="path-card-name">{{ p.name }}</div>
@@ -102,19 +102,19 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 900px; margin: 0 auto; }
-.page-header { margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page { padding: 40px 24px 72px; max-width: 900px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
 .tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); border: 1px solid transparent; }
 .tab:hover { background: var(--purple-subtle); }
-.tab--active { background: var(--purple-bg); color: var(--purple); font-weight: 600; }
+.tab--active { background: var(--purple-bg); color: var(--purple); font-weight: 500; }
 .product-section { margin-bottom: 28px; }
 .product-section:last-child { margin-bottom: 0; }
 .product-section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .product-section-head > i { font-size: 17px; }
-.product-section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.product-section-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
 .product-section-count { font-size: 12px; color: var(--text-muted); }
 .empty-section {
   padding: 24px; text-align: center; font-size: 13px; color: var(--text-muted);
@@ -130,13 +130,13 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
 .path-card:hover { border-color: var(--purple); box-shadow: var(--shadow-md); }
 .path-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .path-card-body { flex: 1; }
-.path-card-name { font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
+.path-card-name { font-size: 14.5px; font-weight: 500; color: var(--text-primary); }
 .path-card-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
 .path-card-meta { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .meta-dot { color: var(--border-mid); font-size: 12px; }
 .meta-text { font-size: 12px; color: var(--text-muted); }
 .path-card-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.pct-label { font-size: 12px; font-weight: 700; }
+.pct-label { font-size: 12px; font-weight: 500; }
 .not-started { font-size: 11px; color: var(--text-muted); }
 .arrow { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
 </style>

@@ -23,8 +23,8 @@ const router = useRouter()
   padding: 2rem;
 }
 .not-found-inner { text-align: center; max-width: 400px; }
-.code { font-size: 6rem; font-weight: 800; color: var(--border); line-height: 1; margin-bottom: 1rem; }
-h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: .75rem; }
+.code { font-size: 6rem; font-weight: 500; color: var(--border); line-height: 1; margin-bottom: 1rem; }
+h1 { font-size: 1.5rem; font-weight: 500; margin-bottom: .75rem; }
 p { color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
 .actions { display: flex; gap: .75rem; justify-content: center; }
 </style>

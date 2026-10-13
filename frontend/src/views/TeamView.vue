@@ -168,7 +168,7 @@ async function submitAssignment() {
             </td>
             <td>
               <span class="status-pill" :style="{
-                background: m.status === 'active' ? 'var(--green-bg)' : m.status === 'invited' ? '#FBF1E3' : '#F3F2F6',
+                background: m.status === 'active' ? 'var(--green-bg)' : m.status === 'invited' ? '#FBEDC8' : '#F1F2F4',
                 color: m.status === 'active' ? 'var(--green)' : m.status === 'invited' ? 'var(--orange)' : 'var(--text-muted)',
               }">{{ m.status }}</span>
             </td>
@@ -216,34 +216,34 @@ async function submitAssignment() {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 900px; margin: 0 auto; }
-.page-header { margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page { padding: 40px 24px 72px; max-width: 900px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
 .dept-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
 .dept-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-.dept-name { font-weight: 600; flex: 1; }
+.dept-name { font-weight: 500; flex: 1; }
 .dept-count { color: var(--text-muted); font-size: 12px; }
 .dept-add-row { display: flex; gap: 8px; margin-top: 6px; }
 .field-input-sm { font-size: 12.5px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .team-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
+th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--purple-subtle); }
 .member-cell { display: flex; align-items: center; gap: 10px; }
-.member-name { font-weight: 600; color: var(--text-primary); }
+.member-name { font-weight: 500; color: var(--text-primary); }
 .member-email { font-size: 11.5px; color: var(--text-muted); }
 .role-text { font-size: 13px; color: var(--text-secondary); }
-.status-pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+.status-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
 .last-active { color: var(--text-muted); }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal { background: var(--surface); border-radius: 14px; padding: 24px; width: 420px; max-width: 90vw; display: flex; flex-direction: column; gap: 4px; }
-.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
-.field-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin: 10px 0 4px; display: block; }
+.modal-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+.field-label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); margin: 10px 0 4px; display: block; }
 .field-hint { font-weight: 400; color: var(--text-muted); }
 .field-input { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }

@@ -177,18 +177,18 @@ const topLearners = computed(() =>
 </template>
 
 <style scoped>
-.page-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
-.page-header h1 { font-size: 1.5rem; font-weight: 700; }
-.page-sub { color: var(--text-muted); font-size: .9rem; }
+.page-container { max-width: 900px; margin: 0 auto; padding: 40px 24px 72px; display: flex; flex-direction: column; gap: 1.25rem; }
+.page-header h1 { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
 .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
-.tile.risk.has-risk { border-color: #EF4444; background: rgba(239,68,68,.05); }
-.tile-val { font-size: 2rem; font-weight: 700; color: var(--purple); }
-.tile.risk.has-risk .tile-val { color: #EF4444; }
+.tile.risk.has-risk { border-color: #E6564E; background: rgba(239,68,68,.05); }
+.tile-val { font-size: 2rem; font-weight: 500; color: var(--purple); }
+.tile.risk.has-risk .tile-val { color: #E6564E; }
 .tile-lbl { font-size: .8rem; color: var(--text-muted); margin-top: .2rem; }
 
 .tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
@@ -196,10 +196,10 @@ const topLearners = computed(() =>
 .tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); font-weight: 500; }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
-.card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+.card h3 { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
 .card h3 i { color: var(--purple); }
 
-.risk-card { border-color: #FEF3C7; background: #FFFBEB; }
+.risk-card { border-color: #FBEDC8; background: #FBEDC8; }
 .risk-card h3 i { color: #D97706; }
 .risk-sub { color: #92400E; font-size: .85rem; margin-bottom: 1rem; margin-top: -.5rem; }
 .risk-list { display: flex; flex-direction: column; gap: .5rem; }
@@ -209,12 +209,12 @@ const topLearners = computed(() =>
 .risk-email { font-size: .8rem; color: var(--text-muted); }
 .risk-modules { font-size: .85rem; color: var(--text-muted); }
 
-.avatar-sm { width: 32px; height: 32px; border-radius: 50%; background: var(--purple); color: #fff; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatar-sm { width: 32px; height: 32px; border-radius: 50%; background: var(--purple); color: #fff; font-size: .7rem; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 .top-learners { display: flex; flex-direction: column; gap: .5rem; }
 .top-row { display: flex; align-items: center; gap: .75rem; padding: .5rem 0; border-bottom: 1px solid var(--border); }
 .top-row:last-child { border-bottom: none; }
-.top-rank { font-weight: 700; color: var(--text-muted); font-size: .85rem; width: 2rem; }
+.top-rank { font-weight: 500; color: var(--text-muted); font-size: .85rem; width: 2rem; }
 .top-name { flex: 1; font-weight: 500; }
 .top-stat { font-size: .85rem; color: var(--text-muted); }
 
@@ -234,7 +234,7 @@ const topLearners = computed(() =>
 .module-bar-wrap { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
 .module-bar { width: 120px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
 .module-fill { height: 100%; background: var(--green); border-radius: 3px; }
-.module-fill.low { background: #EF4444; }
+.module-fill.low { background: #E6564E; }
 .module-pct { font-size: .8rem; color: var(--text-muted); width: 3rem; text-align: right; }
 
 @media (max-width: 640px) {

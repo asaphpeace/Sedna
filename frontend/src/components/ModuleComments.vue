@@ -159,12 +159,12 @@ function timeAgo(iso: string) {
 
 <style scoped>
 .comments-section { margin-top: 2.5rem; }
-.comments-heading { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: .5rem; margin-bottom: 1.25rem; }
+.comments-heading { font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: .5rem; margin-bottom: 1.25rem; }
 .comments-heading i { color: var(--purple); }
 .count { background: var(--border); border-radius: 10px; padding: .1rem .45rem; font-size: .75rem; font-weight: 500; color: var(--text-muted); }
 
 .compose { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
-.reply-notice { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; background: rgba(110,43,240,.07); font-size: .85rem; color: var(--purple); }
+.reply-notice { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; background: rgba(122,63,229,.07); font-size: .85rem; color: var(--purple); }
 .cancel-reply { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 2px; display: flex; align-items: center; }
 .comment-input { width: 100%; padding: .875rem 1rem; border: none; background: transparent; resize: none; font-family: inherit; font-size: .9rem; color: var(--text); outline: none; }
 .compose-footer { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; border-top: 1px solid var(--border); }
@@ -178,17 +178,17 @@ function timeAgo(iso: string) {
 .comment-list { display: flex; flex-direction: column; gap: 1rem; }
 .comment-thread { }
 .comment { display: flex; gap: .75rem; }
-.comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--purple); color: #fff; font-size: .75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--purple); color: #fff; font-size: .75rem; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .comment-avatar.sm { width: 28px; height: 28px; font-size: .65rem; }
 .comment-body-wrap { flex: 1; min-width: 0; }
 .comment-meta { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem; }
-.comment-author { font-weight: 600; font-size: .875rem; }
+.comment-author { font-weight: 500; font-size: .875rem; }
 .comment-time { font-size: .75rem; color: var(--text-muted); }
 .comment-body { font-size: .9rem; line-height: 1.5; margin: 0; }
 .comment-actions { display: flex; align-items: center; gap: .25rem; margin-top: .5rem; }
 .action-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: .25rem; color: var(--text-muted); font-size: .8rem; padding: .25rem .4rem; border-radius: 4px; transition: color .15s, background .15s; }
 .action-btn:hover { background: rgba(0,0,0,.06); color: var(--text); }
-.action-btn.liked { color: #EF4444; }
-.action-btn.danger:hover { color: #EF4444; }
+.action-btn.liked { color: #E6564E; }
+.action-btn.danger:hover { color: #E6564E; }
 .replies { margin-left: 2.75rem; margin-top: .75rem; display: flex; flex-direction: column; gap: .75rem; padding-left: 1rem; border-left: 2px solid var(--border); }
 </style>

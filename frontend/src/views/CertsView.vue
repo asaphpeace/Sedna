@@ -40,18 +40,18 @@ const certs = computed(() => app.certs)
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 800px; margin: 0 auto; }
-.page-header { margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page { padding: 40px 24px 72px; max-width: 800px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); font-size: 14px; text-align: center; }
 .certs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
-.cert-card { display: flex; align-items: center; gap: 16px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: border-color 0.12s; }
+.cert-card { display: flex; align-items: center; gap: 16px; padding: 22px 24px; background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-md); box-shadow: var(--shadow); text-decoration: none; transition: border-color 0.12s; }
 .cert-card:hover { border-color: var(--purple); }
-.cert-seal { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #8255F2, #6E2BF0, #5A1FD6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(110,43,240,0.3); }
+.cert-seal { width: 52px; height: 52px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .cert-body { flex: 1; }
-.cert-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.cert-tier { font-size: 12px; color: var(--purple); font-weight: 600; margin-top: 2px; }
+.cert-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.cert-tier { font-size: 12px; color: var(--purple); font-weight: 500; margin-top: 2px; }
 .cert-date { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 .cert-cred { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
 .cert-arrow { color: var(--text-muted); font-size: 16px; }

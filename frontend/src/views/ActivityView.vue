@@ -8,10 +8,10 @@ function actionIcon(action: string) {
   return { started: 'ti-player-play', completed: 'ti-check', earned: 'ti-certificate', saved: 'ti-bookmark' }[action] ?? 'ti-activity'
 }
 function actionBg(action: string) {
-  return { started: '#F1EBFE', completed: '#E2F6EC', earned: '#FBF1E3', saved: '#F1EBFE' }[action] ?? '#F3F2F6'
+  return { started: '#ECDEFE', completed: '#D3F4DE', earned: '#FBEDC8', saved: '#ECDEFE' }[action] ?? '#F1F2F4'
 }
 function actionFg(action: string) {
-  return { started: '#6E2BF0', completed: '#0E7E58', earned: '#B26A00', saved: '#6E2BF0' }[action] ?? '#A39EAE'
+  return { started: '#7A3FE5', completed: '#1F8A5B', earned: '#633806', saved: '#7A3FE5' }[action] ?? '#6B6C75'
 }
 
 function dayLabel(dateStr: string) {
@@ -66,18 +66,18 @@ const grouped = computed(() => {
 </template>
 
 <style scoped>
-.page { padding: 28px 32px; max-width: 760px; margin: 0 auto; }
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+.page { padding: 40px 24px 72px; max-width: 760px; margin: 0 auto; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .empty { color: var(--text-muted); }
 .groups { display: flex; flex-direction: column; gap: 24px; }
-.day-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+.day-label { font-size: 11.5px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
 .items { display: flex; flex-direction: column; gap: 0; }
 .activity-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .activity-row:last-child { border-bottom: none; }
 .act-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .act-body { flex: 1; font-size: 13px; color: var(--text-secondary); }
-.act-name { font-weight: 600; color: var(--text-primary); }
+.act-name { font-weight: 500; color: var(--text-primary); }
 .act-target { color: var(--purple); font-weight: 500; }
 .act-time { font-size: 12px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 </style>

@@ -55,10 +55,13 @@ async def my_path_progress(
 
     out = []
     for role in roles:
-        total = sum(len(t.modules) for t in role.tiers)
+        # Only real modules count; a course of placeholder outlines isn't shown
+        total = sum(1 for t in role.tiers for m in t.modules if not m.is_placeholder)
+        if total == 0:
+            continue
         done = sum(
             1 for t in role.tiers for m in t.modules
-            if prog_map.get(m.id) and prog_map[m.id].state == "done"
+            if not m.is_placeholder and prog_map.get(m.id) and prog_map[m.id].state == "done"
         )
         pct = int(done / total * 100) if total else 0
         earned = sum(1 for t in role.tiers if t.id in earned_tier_ids)
