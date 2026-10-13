@@ -3,7 +3,13 @@ import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior: (to) => (to.hash ? { el: to.hash, top: 16 } : { top: 0 }),
   routes: [
+    // Public front door, built from Nassia's Learning Hub design
+    { path: '/', component: () => import('@/views/hub/HubHomeView.vue'), meta: { public: true } },
+    { path: '/learning', component: () => import('@/views/hub/HubLearningView.vue'), meta: { public: true } },
+    { path: '/learning/email', component: () => import('@/views/hub/HubEmailView.vue'), meta: { public: true } },
+    { path: '/learning/vms', component: () => import('@/views/hub/HubVmsView.vue'), meta: { public: true } },
     { path: '/login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
     { path: '/accept-invite', component: () => import('@/views/AcceptInviteView.vue'), meta: { public: true } },
     { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFoundView.vue'), meta: { public: true } },
@@ -11,7 +17,6 @@ const router = createRouter({
       path: '/',
       component: () => import('@/components/layout/AppLayout.vue'),
       children: [
-        { path: '', redirect: '/home' },
         { path: 'home', component: () => import('@/views/HomeView.vue') },
         { path: 'paths', component: () => import('@/views/PathsView.vue') },
         { path: 'paths/:id', component: () => import('@/views/PathDetailView.vue') },
@@ -41,9 +46,10 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (to.meta.public) return true
   const auth = useAuthStore()
-  if (!auth.token) return '/login'
+  const signIn = { path: '/login', query: { redirect: to.fullPath } }
+  if (!auth.token) return signIn
   if (!auth.user) {
-    try { await auth.fetchMe() } catch { return '/login' }
+    try { await auth.fetchMe() } catch { return signIn }
   }
   return true
 })

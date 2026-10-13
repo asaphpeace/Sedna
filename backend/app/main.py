@@ -47,6 +47,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(paths.router)
+app.include_router(paths.public_router)
 app.include_router(modules.router)
 app.include_router(progress.router)
 app.include_router(certificates.router)

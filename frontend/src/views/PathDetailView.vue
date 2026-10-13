@@ -105,33 +105,33 @@ const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2B
 
 <style scoped>
 .page { padding: 40px 24px 72px; max-width: 800px; margin: 0 auto; }
-.back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-secondary); padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 20px; cursor: pointer; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 20px; cursor: pointer; }
 .back-btn:hover { background: var(--purple-subtle); }
 .loading { color: var(--text-muted); }
 .hero { margin-bottom: 28px; }
 .hero-title { font-size: 24px; font-weight: 500; letter-spacing: -0.5px; }
-.hero-desc { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+.hero-desc { font-size: 15px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
 .hero-meta { display: flex; align-items: center; gap: 7px; margin-top: 14px; flex-wrap: wrap; }
 .meta-dot { color: var(--border-mid); }
-.meta-text { font-size: 13px; color: var(--text-muted); }
+.meta-text { font-size: 14px; color: var(--text-muted); }
 .tiers { display: flex; flex-direction: column; gap: 12px; }
 .tier { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .tier-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
 .tier-header:hover { background: var(--purple-subtle); }
-.tier-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+.tier-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; flex-shrink: 0; }
 .tier-info { flex: 1; }
-.tier-name { font-size: 14px; font-weight: 500; }
-.tier-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.tier-pill { font-size: 11.5px; font-weight: 500; padding: 3px 10px; border-radius: 100px; }
+.tier-name { font-size: 15px; font-weight: 500; }
+.tier-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.tier-pill { font-size: 12.5px; font-weight: 500; padding: 3px 10px; border-radius: 100px; }
 .tier-chev { font-size: 16px; color: var(--text-muted); transition: transform 0.2s; }
 .module-list { border-top: 1px solid var(--border); }
 .module-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background 0.1s; }
 .module-row:last-child { border-bottom: none; }
 .module-row:hover { background: var(--purple-subtle); }
-.mod-seq { width: 20px; font-size: 11.5px; color: var(--text-muted); font-weight: 500; text-align: center; flex-shrink: 0; }
+.mod-seq { width: 20px; font-size: 12.5px; color: var(--text-muted); font-weight: 500; text-align: center; flex-shrink: 0; }
 .mod-type-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .mod-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-.mod-title { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-.mod-meta { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
+.mod-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.mod-meta { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
 .mod-state { flex-shrink: 0; }
 </style>

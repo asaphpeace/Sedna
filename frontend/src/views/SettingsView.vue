@@ -87,17 +87,17 @@ function logout() {
 .page { padding: 40px 24px 72px; max-width: 600px; margin: 0 auto; }
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; margin-bottom: 28px; }
 .section { margin-bottom: 32px; }
-.section-title { font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+.section-title { font-size: 20px; font-weight: 500; letter-spacing: -0.012em; margin-bottom: 14px; }
 .profile-row { display: flex; align-items: center; gap: 14px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .profile-name { font-size: 15px; font-weight: 500; }
-.profile-email { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-.profile-role { font-size: 12px; color: var(--purple); font-weight: 500; margin-top: 4px; }
+.profile-email { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+.profile-role { font-size: 13px; color: var(--purple); font-weight: 500; margin-top: 4px; }
 .notif-list { display: flex; flex-direction: column; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .notif-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .notif-row:last-child { border-bottom: none; }
 .notif-info { flex: 1; }
-.notif-title { font-size: 13.5px; font-weight: 500; }
-.notif-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.notif-title { font-size: 15px; font-weight: 500; }
+.notif-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 .toggle { width: 38px; height: 22px; border-radius: 11px; background: var(--border-mid); cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
 .toggle--on { background: var(--purple); }
 .toggle-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }

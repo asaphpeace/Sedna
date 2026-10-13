@@ -111,20 +111,20 @@ async function removeAssignment(id: number) {
 .summary-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
 .summary-card.warn { border-color: #B0322B; }
 .summary-num { font-size: 24px; font-weight: 500; }
-.summary-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.summary-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
 .filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-.chip { font-size: 12.5px; font-weight: 500; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); }
+.chip { font-size: 14px; font-weight: 500; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); }
 .chip.active { background: var(--purple); color: #fff; border-color: var(--purple); }
 
-.empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
-.mandatory-tag { font-size: 10.5px; font-weight: 500; color: #633806; background: #FBEDC8; padding: 2px 7px; border-radius: 100px; margin-left: 6px; }
-.status-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
+.mandatory-tag { font-size: 12px; font-weight: 500; color: #633806; background: #FBEDC8; padding: 2px 7px; border-radius: 100px; margin-left: 6px; }
+.status-pill { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
 .progress-track { width: 100px; height: 5px; border-radius: 100px; background: var(--border); overflow: hidden; }
 .progress-fill { height: 100%; background: var(--purple); }
 .actions-cell { text-align: right; }

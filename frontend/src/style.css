@@ -261,3 +261,94 @@ h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.012em; }
   .page-title, .page-header h1 { font-size: 30px !important; }
   .page-sub { font-size: 15px !important; }
 }
+
+/* Avatars follow the design (lilac with deep purple initial) even where a
+   per-user colour is set inline */
+.avatar { background: var(--purple-bg) !important; color: var(--purple-dark) !important; }
+
+/* ── Learning Hub (public pages) ─────────────────────────────────────────
+   Values taken one-for-one from Nassia's Learning Hub design. */
+.hub-page { min-height: 100vh; background: #FAFAF8; color: #0B0B0F; }
+.hub-main { max-width: 1180px; margin: 0 auto; padding: 40px 24px 72px; display: flex; flex-direction: column; gap: 40px; }
+.hub-main--home { padding-top: 56px; gap: 48px; }
+.hub-eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: #6B6C75; text-transform: uppercase; }
+.hub-eyebrow--accent { color: #7A3FE5; }
+.hub-breadcrumb { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: #6B6C75; display: flex; flex-wrap: wrap; gap: 8px; }
+.hub-breadcrumb a { color: #6B6C75; text-decoration: underline; }
+.hub-breadcrumb a:hover { color: #4B1FA8; }
+.hub-breadcrumb .current { color: #0B0B0F; }
+.hub-intro { display: flex; flex-direction: column; gap: 14px; max-width: 760px; }
+.hub-h1 { margin: 0; font-size: 48px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
+.hub-lead { margin: 0; font-size: 17px; line-height: 1.5; color: #3A3B42; }
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.hub-card {
+  background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 28px;
+  display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); color: #0B0B0F;
+}
+.hub-card--accent { border-color: #DCC9FE; }
+.hub-card--warm { background: #F4F2EE; box-shadow: none; gap: 14px; }
+a.hub-card { text-decoration: none; gap: 14px; }
+a.hub-card:hover { border-color: #DCC9FE; }
+.hub-h2 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -0.012em; }
+.hub-p { margin: 0; font-size: 15px; line-height: 1.45; color: #3A3B42; }
+.hub-rows { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+.hub-row {
+  display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 14px;
+  border: 1px solid #E4E5E9; border-radius: 8px; font-size: 15px; color: #0B0B0F; text-decoration: none; background: #FFFFFF;
+}
+.hub-row .arrow { color: #6B6C75; }
+.hub-row:hover { border-color: #C2C4CB; }
+.hub-row--soft { border-color: #DCC9FE; background: #F5EEFF; color: #4B1FA8; font-weight: 500; }
+.hub-row--soft .arrow { color: inherit; }
+.hub-row--primary { background: #7A3FE5; border-color: #7A3FE5; color: #FFFFFF; font-weight: 500; }
+.hub-row--primary .arrow { color: inherit; }
+.hub-row--primary:hover { background: #4B1FA8; border-color: #4B1FA8; }
+.hub-row--muted { color: #6B6C75; cursor: default; }
+.hub-row--muted:hover { border-color: #E4E5E9; }
+.hub-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.hub-tag { border-radius: 4px; padding: 4px 8px; font-size: 13px; line-height: 1.2; white-space: nowrap; }
+.hub-tag--lilac { background: #ECDEFE; color: #4B1FA8; }
+.hub-tag--sky { background: #C5D9FE; color: #15161B; }
+.hub-tag--mint { background: #D3F4DE; color: #15161B; }
+.hub-tag--grey { background: #F1F2F4; color: #3A3B42; }
+.hub-cta { margin-top: auto; color: #7A3FE5; font-weight: 500; font-size: 15px; min-height: 44px; display: flex; align-items: center; }
+.hub-btn {
+  min-height: 48px; padding: 0 22px; border: 0; border-radius: 8px; background: #7A3FE5; color: #FFFFFF;
+  font-size: 15px; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;
+}
+.hub-btn:hover { background: #4B1FA8; }
+.hub-btn--ghost { background: transparent; border: 1px solid #C2C4CB; color: #0B0B0F; font-weight: 400; }
+.hub-btn--ghost:hover { background: #F1F2F4; }
+
+/* Numbered sections on the product pages */
+.hub-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.hub-step {
+  background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 22px 24px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 20px;
+}
+.hub-step--group { border-color: #DCC9FE; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 18px; }
+.hub-step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.hub-step-num { font-family: var(--font-mono); font-size: 14px; color: #7A3FE5; min-width: 28px; }
+.hub-step-body { flex: 999 1 320px; display: flex; flex-direction: column; gap: 4px; }
+.hub-step-title { margin: 0; font-size: 20px; font-weight: 500; }
+.hub-step-desc { margin: 0; font-size: 15px; color: #3A3B42; line-height: 1.45; }
+.hub-step-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: #6B6C75; text-transform: uppercase; }
+a.hub-step-link { color: #7A3FE5; font-size: 15px; font-weight: 500; min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; }
+.hub-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.hub-option {
+  display: flex; flex-direction: column; gap: 6px; padding: 18px; border: 1px solid #E4E5E9; border-radius: 12px;
+  background: #FAFAF8; color: #0B0B0F; text-decoration: none;
+}
+a.hub-option:hover { border-color: #DCC9FE; background: #F5EEFF; }
+.hub-option-title { font-size: 17px; font-weight: 500; }
+.hub-option-sub { font-size: 14px; color: #3A3B42; }
+.hub-option-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: #6B6C75; margin-top: 4px; }
+.hub-option--soon { border-style: dashed; border-color: #C2C4CB; background: transparent; }
+.hub-option--soon .hub-option-title { color: #3A3B42; }
+.hub-back { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; font-size: 15px; color: #7A3FE5; text-decoration: none; }
+
+@media (max-width: 768px) {
+  .hub-h1 { font-size: 34px; }
+  .hub-main--home { padding-top: 32px; }
+  .hub-card { padding: 22px; }
+}

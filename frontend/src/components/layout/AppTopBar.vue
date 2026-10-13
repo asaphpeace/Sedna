@@ -15,7 +15,7 @@ const menuOpen = ref(false)
 
 // Computed so the Compliance and Admin entries follow the user once it loads
 const sections = computed<Section[]>(() => [
-  { key: 'home', label: 'Home', items: [{ to: '/home', label: 'Home' }] },
+  { key: 'home', label: 'My learning', items: [{ to: '/home', label: 'My learning' }] },
   {
     key: 'learning', label: 'Learning', items: [
       { to: '/paths', label: 'My paths' },
@@ -74,7 +74,7 @@ watch(() => route.path, () => { menuOpen.value = false })
 <template>
   <header class="topbar">
     <div class="topbar-inner">
-      <RouterLink to="/home" class="brand" aria-label="Sedna Learning Hub home">
+      <RouterLink to="/" class="brand" aria-label="Sedna Learning Hub">
         <span class="brand-name">Sedna</span>
         <span class="brand-sub">LEARNING HUB</span>
       </RouterLink>

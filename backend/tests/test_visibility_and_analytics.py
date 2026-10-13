@@ -38,3 +38,25 @@ async def test_placeholder_content_hidden_from_learners_not_admins(
     assert stub.id in {m["id"] for m in browse_admin}
     assert (await client.get(f"/modules/{stub.id}", headers=auth_headers(admin))).status_code == 200
     assert (await client.get(f"/paths/{stub_path_id}", headers=auth_headers(admin))).status_code == 200
+
+
+async def test_public_catalog_needs_no_login_and_hides_internal_and_placeholder(
+    client, db_session, tier_with_modules, tier_with_placeholder_modules
+):
+    from app.models.content import LearningRole, Module, Tier
+
+    internal = LearningRole(name="Staff Only Path", description="", audience="internal", products=["vms"])
+    db_session.add(internal)
+    await db_session.flush()
+    t = Tier(role_id=internal.id, label="Foundation", name="Staff Tier", cert_name="Staff Cert")
+    db_session.add(t)
+    await db_session.flush()
+    db_session.add(Module(tier_id=t.id, title="Staff module", module_type="a", product="vms"))
+    await db_session.commit()
+
+    resp = await client.get("/public/catalog")
+    assert resp.status_code == 200
+    names = {p["name"] for p in resp.json()}
+    assert "Test Path" in names           # customer course with real content
+    assert "Stub Path" not in names       # all placeholder outlines
+    assert "Staff Only Path" not in names # internal staff course

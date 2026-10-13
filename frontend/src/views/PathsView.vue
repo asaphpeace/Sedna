@@ -107,7 +107,7 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
-.tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); border: 1px solid transparent; }
+.tab { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); border: 1px solid transparent; }
 .tab:hover { background: var(--purple-subtle); }
 .tab--active { background: var(--purple-bg); color: var(--purple); font-weight: 500; }
 .product-section { margin-bottom: 28px; }
@@ -115,9 +115,9 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
 .product-section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .product-section-head > i { font-size: 17px; }
 .product-section-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
-.product-section-count { font-size: 12px; color: var(--text-muted); }
+.product-section-count { font-size: 13px; color: var(--text-muted); }
 .empty-section {
-  padding: 24px; text-align: center; font-size: 13px; color: var(--text-muted);
+  padding: 24px; text-align: center; font-size: 14px; color: var(--text-muted);
   background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
 }
 .paths-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -130,13 +130,13 @@ const iconColor: Record<string, { bg: string; fg: string }> = {
 .path-card:hover { border-color: var(--purple); box-shadow: var(--shadow-md); }
 .path-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .path-card-body { flex: 1; }
-.path-card-name { font-size: 14.5px; font-weight: 500; color: var(--text-primary); }
-.path-card-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
+.path-card-name { font-size: 15.5px; font-weight: 500; color: var(--text-primary); }
+.path-card-desc { font-size: 14px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
 .path-card-meta { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-.meta-dot { color: var(--border-mid); font-size: 12px; }
-.meta-text { font-size: 12px; color: var(--text-muted); }
+.meta-dot { color: var(--border-mid); font-size: 13px; }
+.meta-text { font-size: 13px; color: var(--text-muted); }
 .path-card-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.pct-label { font-size: 12px; font-weight: 500; }
-.not-started { font-size: 11px; color: var(--text-muted); }
+.pct-label { font-size: 13px; font-weight: 500; }
+.not-started { font-size: 12px; color: var(--text-muted); }
 .arrow { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
 </style>

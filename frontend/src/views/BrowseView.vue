@@ -95,10 +95,10 @@ const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
-.search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; min-width: 220px; }
+.search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; min-width: 220px; }
 .search-input:focus { border-color: var(--purple); }
 .chip-group { display: flex; gap: 4px; }
-.chip { padding: 5px 12px; border-radius: 100px; font-size: 12.5px; font-weight: 500; border: 1px solid var(--border); color: var(--text-secondary); background: var(--surface); }
+.chip { padding: 5px 12px; border-radius: 100px; font-size: 14px; font-weight: 500; border: 1px solid var(--border); color: var(--text-secondary); background: var(--surface); }
 .chip:hover { background: var(--purple-subtle); }
 .chip--active { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bg); font-weight: 500; }
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
@@ -107,8 +107,8 @@ const typeIcon: Record<string, string> = { v: 'ti-player-play', a: 'ti-file-text
 .mod-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .mod-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
 .save-btn { background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; }
-.mod-title { font-size: 13px; font-weight: 500; color: var(--text-primary); line-height: 1.4; flex: 1; }
+.mod-title { font-size: 14px; font-weight: 500; color: var(--text-primary); line-height: 1.4; flex: 1; }
 .mod-meta { display: flex; align-items: center; gap: 6px; }
 .dot { color: var(--border-mid); }
-.dur { font-size: 12px; color: var(--text-muted); }
+.dur { font-size: 13px; color: var(--text-muted); }
 </style>

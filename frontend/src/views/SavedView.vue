@@ -57,14 +57,14 @@ const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2B
 .page-header { margin-bottom: 32px; }
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
-.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); font-size: 14px; text-align: center; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); font-size: 15px; text-align: center; }
 .list { display: flex; flex-direction: column; gap: 0; }
 .row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); text-decoration: none; }
 .row:last-child { border-bottom: none; }
 .row-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .row-body { flex: 1; }
-.row-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
-.row-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-.row-saved { font-size: 12px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.row-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+.row-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.row-saved { font-size: 13px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 .unsave-btn { background: none; border: none; cursor: pointer; font-size: 17px; padding: 4px; flex-shrink: 0; }
 </style>

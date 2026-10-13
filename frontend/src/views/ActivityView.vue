@@ -71,13 +71,13 @@ const grouped = computed(() => {
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .empty { color: var(--text-muted); }
 .groups { display: flex; flex-direction: column; gap: 24px; }
-.day-label { font-size: 11.5px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+.day-label { font-size: 12.5px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
 .items { display: flex; flex-direction: column; gap: 0; }
 .activity-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .activity-row:last-child { border-bottom: none; }
 .act-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.act-body { flex: 1; font-size: 13px; color: var(--text-secondary); }
+.act-body { flex: 1; font-size: 14px; color: var(--text-secondary); }
 .act-name { font-weight: 500; color: var(--text-primary); }
 .act-target { color: var(--purple); font-weight: 500; }
-.act-time { font-size: 12px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.act-time { font-size: 13px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 </style>

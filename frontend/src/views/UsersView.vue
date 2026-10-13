@@ -163,25 +163,25 @@ async function saveEdit() {
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.users-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
+.users-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); }
 td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-secondary); }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--purple-subtle); }
 .member-cell { display: flex; align-items: center; gap: 10px; }
 .member-name { font-weight: 500; color: var(--text-primary); }
-.member-email { font-size: 11.5px; color: var(--text-muted); }
-.status-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
+.member-email { font-size: 12.5px; color: var(--text-muted); }
+.status-pill { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 100px; }
 .muted { color: var(--text-muted); }
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(11,11,15,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal { background: var(--surface); border-radius: 14px; padding: 28px; width: 400px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 64px rgba(11,11,15,0.2); }
 .modal-title { font-size: 17px; font-weight: 500; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-.input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+.label { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.input { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; }
 .input:focus { border-color: var(--purple); }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
 .admin-badge { font-size: 10px; font-weight: 500; color: var(--purple); background: var(--purple-subtle); padding: 2px 7px; border-radius: 100px; margin-left: 6px; vertical-align: middle; }
-.checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); cursor: pointer; }
 </style>

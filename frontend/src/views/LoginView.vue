@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const email = ref('')
 const password = ref('')
@@ -15,7 +16,10 @@ async function submit() {
   loading.value = true
   try {
     await auth.login(email.value, password.value)
-    router.push('/home')
+    // Back to where sign-in was asked for (only same-site paths)
+    const back = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
+      ? route.query.redirect : '/home'
+    router.push(back)
   } catch {
     error.value = 'Invalid email or password.'
   } finally {
@@ -28,10 +32,10 @@ async function submit() {
   <div class="login-page">
     <div class="login-card">
       <!-- Logo -->
-      <div class="login-logo">
+      <RouterLink to="/" class="login-logo" aria-label="Back to the Learning Hub">
         <span class="login-brand">Sedna</span>
         <span class="login-sub">LEARNING HUB</span>
-      </div>
+      </RouterLink>
 
       <h1 class="login-heading">Welcome back</h1>
       <p class="login-caption">Sign in to continue learning</p>
@@ -84,7 +88,7 @@ async function submit() {
   background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
   box-shadow: var(--shadow-md); padding: 40px; width: 100%; max-width: 440px;
 }
-.login-logo { display: flex; align-items: baseline; gap: 10px; margin-bottom: 32px; }
+.login-logo { display: flex; align-items: baseline; gap: 10px; margin-bottom: 32px; color: var(--text-primary); }
 .login-brand { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
 .login-sub { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--text-muted); }
 .login-heading { font-size: 32px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }

@@ -5,14 +5,21 @@ export const authApi = {
   login: (email: string, password: string) =>
     client.post<{ access_token: string }>('/auth/login', { email, password }),
   me: () => client.get('/auth/me'),
+  meQuiet: () => client.get('/auth/me', { skipAuthRedirect: true } as any),
   getInvite: (token: string) => client.get(`/auth/invite/${token}`),
   acceptInvite: (token: string, password: string) =>
     client.post<{ access_token: string }>('/auth/accept-invite', { token, password }),
 }
 
+// ── Public (no sign-in) ───────────────────────────────
+export const publicApi = {
+  catalog: () => client.get('/public/catalog'),
+}
+
 // ── Paths ─────────────────────────────────────────────
 export const pathsApi = {
   list: () => client.get('/paths'),
+  listQuiet: () => client.get('/paths', { skipAuthRedirect: true } as any),
   get: (id: number) => client.get(`/paths/${id}`),
 }
 

@@ -44,15 +44,15 @@ const certs = computed(() => app.certs)
 .page-header { margin-bottom: 32px; }
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
 .page-sub { font-size: 17px; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
-.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); font-size: 14px; text-align: center; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); font-size: 15px; text-align: center; }
 .certs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
 .cert-card { display: flex; align-items: center; gap: 16px; padding: 22px 24px; background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-md); box-shadow: var(--shadow); text-decoration: none; transition: border-color 0.12s; }
 .cert-card:hover { border-color: var(--purple); }
 .cert-seal { width: 52px; height: 52px; border-radius: 50%; background: var(--purple); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .cert-body { flex: 1; }
-.cert-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-.cert-tier { font-size: 12px; color: var(--purple); font-weight: 500; margin-top: 2px; }
-.cert-date { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
-.cert-cred { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
+.cert-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+.cert-tier { font-size: 13px; color: var(--purple); font-weight: 500; margin-top: 2px; }
+.cert-date { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+.cert-cred { font-size: 12px; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
 .cert-arrow { color: var(--text-muted); font-size: 16px; }
 </style>

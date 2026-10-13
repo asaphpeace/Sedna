@@ -136,49 +136,49 @@ function actionIconFg(action: string) {
 </template>
 
 <style scoped>
-.page { padding: 40px 24px 72px; max-width: 1100px; margin: 0 auto; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.span-2 { grid-column: span 2; }
+.page { padding: 24px 24px 72px; max-width: var(--content-max); margin: 0 auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 24px; }
+.span-2 { grid-column: 1 / -1; }
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.section-title { font-size: 14px; font-weight: 500; }
-.see-all { font-size: 12px; color: var(--purple); font-weight: 500; display: flex; align-items: center; gap: 3px; }
-.empty { font-size: 13px; color: var(--text-muted); }
+.section-title { font-size: 20px; font-weight: 500; letter-spacing: -0.012em; }
+.see-all { font-size: 13px; color: var(--purple); font-weight: 500; display: flex; align-items: center; gap: 3px; }
+.empty { font-size: 14px; color: var(--text-muted); }
 
 /* Path rows */
 .path-list { display: flex; flex-direction: column; gap: 14px; }
 .path-row { display: flex; flex-direction: column; gap: 6px; text-decoration: none; }
 .path-info { display: flex; justify-content: space-between; }
-.path-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-.path-pct { font-size: 12px; color: var(--text-muted); }
-.path-meta { font-size: 11px; color: var(--text-muted); }
+.path-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.path-pct { font-size: 13px; color: var(--text-muted); }
+.path-meta { font-size: 12px; color: var(--text-muted); }
 
 /* Activity */
 .activity-list { display: flex; flex-direction: column; gap: 12px; }
 .activity-row { display: flex; align-items: center; gap: 10px; }
-.act-body { flex: 1; font-size: 12.5px; color: var(--text-secondary); }
+.act-body { flex: 1; font-size: 14px; color: var(--text-secondary); }
 .act-name { font-weight: 500; color: var(--text-primary); }
-.act-text { }
+.act-text { margin: 0 4px; }
 .act-target { color: var(--purple); font-weight: 500; }
-.act-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.act-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* Releases */
 .releases-list { display: flex; flex-direction: column; gap: 0; }
 .release-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .release-row:last-child { border-bottom: none; }
-.release-tag { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+.release-tag { font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
 .release-body { flex: 1; }
-.release-title { font-size: 13.5px; font-weight: 500; }
-.release-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
-.release-date { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.release-title { font-size: 15px; font-weight: 500; }
+.release-desc { font-size: 14px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
+.release-date { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 
 /* Assigned to you */
-.assigned-card { margin-bottom: 20px; border: 1px solid var(--purple); }
+.assigned-card { margin-bottom: 24px; border: 1px solid var(--lilac); }
 .assigned-list { display: flex; flex-direction: column; gap: 0; }
 .assigned-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); text-decoration: none; }
 .assigned-row:last-child { border-bottom: none; }
 .assigned-body { display: flex; align-items: center; gap: 8px; }
-.assigned-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-.mandatory-tag { font-size: 10.5px; font-weight: 500; color: #633806; background: #FBEDC8; padding: 2px 7px; border-radius: 100px; }
-.due-tag { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.assigned-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.mandatory-tag { font-size: 13px; color: #633806; background: #FBEDC8; padding: 4px 8px; border-radius: 4px; }
+.due-tag { font-size: 13px; font-weight: 500; color: var(--text-muted); }
 .due-tag.urgent { color: #B0322B; }
 </style>
