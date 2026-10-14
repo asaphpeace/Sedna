@@ -14,6 +14,16 @@ export const authApi = {
 // ── Public (no sign-in) ───────────────────────────────
 export const publicApi = {
   catalog: () => client.get('/public/catalog'),
+  articles: (params: { section?: string; product?: string; q?: string } = {}) => client.get('/public/articles', { params }),
+  article: (slug: string) => client.get(`/public/articles/${slug}`),
+}
+
+// ── Knowledge Base and Help Center (Sedna admins) ─────
+export const articlesApi = {
+  list: () => client.get('/admin/articles'),
+  create: (body: object) => client.post('/admin/articles', body),
+  update: (id: number, body: object) => client.put(`/admin/articles/${id}`, body),
+  remove: (id: number) => client.delete(`/admin/articles/${id}`),
 }
 
 // ── Paths ─────────────────────────────────────────────

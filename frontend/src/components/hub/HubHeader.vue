@@ -8,6 +8,8 @@ import { useAuthStore } from '@/stores/auth'
 const route = useRoute()
 const auth = useAuthStore()
 const onLearning = () => route.path.startsWith('/learning')
+const onKb = () => route.path === '/knowledge-base'
+const onHelp = () => route.path === '/help-center'
 </script>
 
 <template>
@@ -20,8 +22,8 @@ const onLearning = () => route.path.startsWith('/learning')
         <span v-if="isDemo" class="demo-tag" title="Fictional companies and learners for demonstrations">DEMO DATA</span>
       </RouterLink>
       <nav aria-label="Hub" class="nav">
-        <RouterLink :to="{ path: '/', hash: '#kb' }" class="nav-link">Knowledge Base</RouterLink>
-        <RouterLink :to="{ path: '/', hash: '#help' }" class="nav-link">Help Center</RouterLink>
+        <RouterLink to="/knowledge-base" class="nav-link" :class="{ current: onKb() }" :aria-current="onKb() ? 'page' : undefined">Knowledge Base</RouterLink>
+        <RouterLink to="/help-center" class="nav-link" :class="{ current: onHelp() }" :aria-current="onHelp() ? 'page' : undefined">Help Center</RouterLink>
         <RouterLink to="/learning" class="nav-link" :class="{ current: onLearning() }" :aria-current="onLearning() ? 'page' : undefined">Learning</RouterLink>
       </nav>
       <RouterLink v-if="auth.user" to="/home" class="user" title="Go to my learning">

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import HubHeader from '@/components/hub/HubHeader.vue'
 import { useCatalog } from '@/composables/useCatalog'
+import { publicApi } from '@/api'
 import { SUPPORT } from '@/constants/hubLinks'
 
 // Nassia's "Learning Hub home" screen. The cohorts banner arrives in Phase 5.
@@ -10,7 +11,13 @@ onMounted(load)
 
 const query = ref('')
 const searched = ref('')
-function search() { searched.value = query.value.trim() }
+const articleResults = ref<any[]>([])
+async function search() {
+  searched.value = query.value.trim()
+  articleResults.value = searched.value
+    ? (await publicApi.articles({ q: searched.value }).catch(() => ({ data: [] }))).data
+    : []
+}
 
 const results = computed(() => {
   const q = searched.value.toLowerCase()
@@ -44,6 +51,9 @@ const supportSearchUrl = computed(() => SUPPORT.search(searched.value))
           </RouterLink>
           <p v-if="!results.length" class="hub-p">No learning paths match “{{ searched }}” yet.</p>
           <div class="hub-eyebrow results-gap">KNOWLEDGE BASE AND HELP CENTER</div>
+          <RouterLink v-for="a in articleResults" :key="a.slug" :to="`/help/${a.slug}`" class="hub-row">
+            <span>{{ a.title }} <span class="result-meta">· {{ a.kind }}</span></span><span class="arrow">→</span>
+          </RouterLink>
           <a :href="supportSearchUrl" target="_blank" rel="noopener" class="hub-row hub-row--soft">
             <span>Search support.sedna.com for “{{ searched }}”</span><span class="arrow">↗</span>
           </a>
@@ -57,7 +67,7 @@ const supportSearchUrl = computed(() => SUPPORT.search(searched.value))
           <p class="hub-p">Product documentation: how each feature works, settings, and release notes.</p>
           <div class="hub-rows">
             <a :href="SUPPORT.emailDocs" target="_blank" rel="noopener" class="hub-row">Sedna Email <span class="arrow">↗</span></a>
-            <a :href="SUPPORT.vmsDocs" target="_blank" rel="noopener" class="hub-row">Sedna VMS <span class="arrow">↗</span></a>
+            <RouterLink to="/knowledge-base" class="hub-row">Sedna VMS <span class="arrow">→</span></RouterLink>
             <a :href="SUPPORT.search('CompassAir')" target="_blank" rel="noopener" class="hub-row">CompassAir <span class="arrow">↗</span></a>
             <a :href="SUPPORT.search('Sedna AI')" target="_blank" rel="noopener" class="hub-row">Sedna AI <span class="arrow">↗</span></a>
           </div>
@@ -69,7 +79,7 @@ const supportSearchUrl = computed(() => SUPPORT.search(searched.value))
           <p class="hub-p">Troubleshooting, account and login help, and a direct line to the Support team.</p>
           <div class="hub-rows">
             <a :href="SUPPORT.search('login')" target="_blank" rel="noopener" class="hub-row">Login and access help <span class="arrow">↗</span></a>
-            <a :href="SUPPORT.fix" target="_blank" rel="noopener" class="hub-row">Troubleshooting <span class="arrow">↗</span></a>
+            <RouterLink to="/help-center" class="hub-row">Troubleshooting <span class="arrow">→</span></RouterLink>
             <a :href="SUPPORT.requests" target="_blank" rel="noopener" class="hub-row">Track my requests <span class="arrow">↗</span></a>
             <a :href="SUPPORT.newRequest" target="_blank" rel="noopener" class="hub-row hub-row--soft">Contact Support <span class="arrow">↗</span></a>
           </div>

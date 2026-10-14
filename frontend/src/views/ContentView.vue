@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { adminApi, uploadsApi } from '@/api'
+import ArticleManager from '@/components/ArticleManager.vue'
 import { PRODUCT_META, PRODUCT_ORDER, productLabel } from '@/constants/products'
 
 // ── State ──────────────────────────────────────────────
-const tab = ref<'modules' | 'paths' | 'releases'>('paths')
+const tab = ref<'modules' | 'paths' | 'releases' | 'articles'>('paths')
 const paths = ref<any[]>([])
 const allModules = ref<any[]>([])
 const loading = ref(false)
@@ -521,7 +522,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
     <div class="page-header">
       <div>
         <h1 class="page-title">Content management</h1>
-        <p class="page-sub">Publish and edit modules, and manage the learning paths they belong to.</p>
+        <p class="page-sub">Publish and edit lessons and learning paths, and the Knowledge Base and Help Center articles.</p>
       </div>
       <button v-if="tab === 'modules'" class="btn btn-primary" @click="tab = 'paths'">
         <i class="ti ti-plus" /> New module
@@ -529,6 +530,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
       <button v-else-if="tab === 'releases'" class="btn btn-primary" @click="openNewRelease">
         <i class="ti ti-plus" /> New release
       </button>
+      <span v-else-if="tab === 'articles'" />
       <button v-else-if="!selectedPath" class="btn btn-primary" @click="openNewPath">
         <i class="ti ti-plus" /> New path
       </button>
@@ -547,6 +549,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
       <button class="tab" :class="{ active: tab === 'modules' }" @click="tab = 'modules'; selectedPath = null">Modules</button>
       <button class="tab" :class="{ active: tab === 'paths' }" @click="tab = 'paths'; selectedPath = null">Paths</button>
       <button class="tab" :class="{ active: tab === 'releases' }" @click="tab = 'releases'; selectedPath = null">Releases</button>
+      <button class="tab" :class="{ active: tab === 'articles' }" @click="tab = 'articles'; selectedPath = null">Articles</button>
     </div>
 
     <!-- ── MODULES TAB ─────────────────────────────────── -->
@@ -695,6 +698,9 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
         </div>
       </div>
     </template>
+
+    <!-- ── ARTICLES TAB (Knowledge Base and Help Center) ── -->
+    <ArticleManager v-else-if="tab === 'articles'" />
 
     <!-- ── RELEASES TAB ─────────────────────────────────── -->
     <template v-else-if="tab === 'releases'">

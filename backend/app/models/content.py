@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import Optional
-from sqlalchemy import ARRAY, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import ARRAY, Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -71,3 +72,27 @@ class Module(Base):
     tier: Mapped["Tier"] = relationship(back_populates="modules")
     progress: Mapped[list["UserModuleProgress"]] = relationship(back_populates="module")
     saved_by: Mapped[list["SavedModule"]] = relationship(back_populates="module")
+
+
+class Article(Base):
+    """A Knowledge Base or Help Center article, public before sign-in once
+    published. Knowledge Base = how-tos and explainers; Help Center =
+    troubleshooting and support processes."""
+
+    __tablename__ = "articles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True)
+    title: Mapped[str] = mapped_column(String(300))
+    summary: Mapped[str] = mapped_column(Text, default="")        # "This is for you if…"
+    section: Mapped[str] = mapped_column(String(20), default="knowledge-base")  # knowledge-base | help-center
+    kind: Mapped[str] = mapped_column(String(30), default="How-to")  # How-to | Explainer | Troubleshooting | Process
+    product: Mapped[str] = mapped_column(String(20), default="vms")  # vms | stream | all
+    topic: Mapped[str] = mapped_column(String(80), default="")
+    body: Mapped[str] = mapped_column(Text, default="")             # markdown
+    related_path_id: Mapped[Optional[int]] = mapped_column(ForeignKey("learning_roles.id", ondelete="SET NULL"), nullable=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Drafted from support cases and awaiting review: shown with a visible label
+    is_sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())

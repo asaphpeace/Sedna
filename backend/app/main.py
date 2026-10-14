@@ -11,6 +11,7 @@ from app.routers import (
     activity,
     admin,
     analytics,
+    articles,
     auth,
     certificates,
     companies,
@@ -50,6 +51,8 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(paths.router)
 app.include_router(paths.public_router)
+app.include_router(articles.public_router)
+app.include_router(articles.admin_router)
 app.include_router(modules.router)
 app.include_router(progress.router)
 app.include_router(certificates.router)
