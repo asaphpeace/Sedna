@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// The demo stack (port 5176) runs on fictional data; say so on every page
+const isDemo = import.meta.env.VITE_DEMO === '1'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -78,6 +80,7 @@ watch(() => route.path, () => { menuOpen.value = false })
       <RouterLink to="/" class="brand" aria-label="Sedna Learning Hub">
         <span class="brand-name">Sedna</span>
         <span class="brand-sub">LEARNING HUB</span>
+        <span v-if="isDemo" class="demo-tag" title="Fictional companies and learners for demonstrations">DEMO DATA</span>
       </RouterLink>
 
       <nav class="sections" aria-label="Main">
@@ -168,4 +171,5 @@ watch(() => route.path, () => { menuOpen.value = false })
   .mobile-link { min-height: 44px; display: flex; align-items: center; font-size: 15px; color: var(--text-secondary); }
   .mobile-link.active { color: var(--purple); font-weight: 500; }
 }
+.demo-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: #FBEDC8; color: #633806; padding: 3px 8px; border-radius: 4px; }
 </style>

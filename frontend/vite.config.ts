@@ -9,7 +9,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': { target: 'http://backend:8000', rewrite: (p) => p.replace(/^\/api/, '') },
+      '/api': { target: process.env.API_TARGET || 'http://backend:8000', rewrite: (p) => p.replace(/^\/api/, '') },
     },
   },
 })

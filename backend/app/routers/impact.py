@@ -75,7 +75,7 @@ def _delta(cur: float, prev: float) -> dict:
 
 @router.get("/impact")
 async def learning_impact(
-    period: Period = "quarter",
+    period: Period = "last_quarter",
     audience: Literal["all", "staff", "customer"] = "all",
     org_id: Optional[int] = Query(None),
     product: Optional[str] = Query(None),

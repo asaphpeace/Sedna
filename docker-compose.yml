@@ -39,5 +39,37 @@ services:
     depends_on:
       - backend
 
+  # Demo stack: same code, separate sedna_demo database, fictional learners.
+  # Start with `docker compose --profile demo up -d`, (re)build the data with
+  # `docker compose --profile demo run --rm demo-backend python -m app.demo_seed`.
+  demo-backend:
+    profiles: ["demo"]
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8012:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sedna:sedna@db:5432/sedna_demo
+    depends_on:
+      db:
+        condition: service_healthy
+
+  demo-frontend:
+    profiles: ["demo"]
+    build: ./frontend
+    command: npm run dev -- --host
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5176:5173"
+    environment:
+      API_TARGET: http://demo-backend:8000
+      VITE_DEMO: "1"
+    depends_on:
+      - demo-backend
+
 volumes:
   pgdata:
