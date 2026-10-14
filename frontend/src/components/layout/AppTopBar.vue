@@ -43,6 +43,7 @@ const sections = computed<Section[]>(() => [
     key: 'admin', label: 'Admin', show: () => !!auth.user?.is_admin, items: [
       { to: '/users', label: 'Users' },
       { to: '/content', label: 'Content' },
+      ...(auth.user?.is_sedna_staff ? [{ to: '/impact', label: 'Learning impact' }] : []),
       { to: '/analytics', label: 'Analytics' },
       { to: '/integrations', label: 'Integrations' },
     ],

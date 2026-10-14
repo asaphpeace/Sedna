@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import Organisation, User
 from app.services.auth import decode_token
 
 bearer = HTTPBearer()
@@ -43,6 +43,18 @@ async def current_user(
 async def admin_user(user: User = Depends(current_user)) -> User:
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin required")
+    return user
+
+
+async def sedna_admin_user(
+    user: User = Depends(admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """An admin in Sedna's own organisation — the only people who may see
+    learning data across every customer company."""
+    org = await db.get(Organisation, user.org_id)
+    if not org or org.kind != "sedna":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sedna admin required")
     return user
 
 

@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -73,3 +73,20 @@ class ActivityLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     user: Mapped["User"] = relationship(back_populates="activity")
+
+
+class LearningTime(Base):
+    """Active seconds a learner spent on a lesson page, per day.
+
+    The lesson page reports small increments only while the tab is visible and
+    the learner has been active recently, so idle tabs don't count.
+    """
+
+    __tablename__ = "learning_time"
+    __table_args__ = (UniqueConstraint("user_id", "module_id", "day"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    module_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), index=True)
+    day: Mapped[date] = mapped_column(Date)
+    seconds: Mapped[int] = mapped_column(Integer, default=0)

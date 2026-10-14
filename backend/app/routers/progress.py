@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.content import LearningRole, Module, Tier
-from app.models.progress import ActivityLog, Certificate, UserModuleProgress
+from app.models.progress import ActivityLog, Certificate, LearningTime, UserModuleProgress
 from app.models.user import User
 from app.schemas.progress import ModuleProgressOut, RoleProgressOut
 from app.services.cert_award import check_and_award_cert
@@ -103,6 +105,32 @@ async def start_module(
             target_type="module", target_id=module_id,
             target_label=module.title,
         ))
+    await db.commit()
+    return {"status": "ok"}
+
+
+class TimeIn(BaseModel):
+    # The lesson page reports every 30s; anything larger is a bug or a replay
+    seconds: int = Field(gt=0, le=60)
+
+
+@router.post("/modules/{module_id}/time")
+async def record_time(
+    module_id: int,
+    body: TimeIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    if not await db.get(Module, module_id):
+        raise HTTPException(status_code=404, detail="Module not found")
+    stmt = pg_insert(LearningTime).values(
+        user_id=user.id, module_id=module_id, day=datetime.utcnow().date(), seconds=body.seconds,
+    )
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["user_id", "module_id", "day"],
+        set_={"seconds": LearningTime.seconds + stmt.excluded.seconds},
+    )
+    await db.execute(stmt)
     await db.commit()
     return {"status": "ok"}
 
