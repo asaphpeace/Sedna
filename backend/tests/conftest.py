@@ -70,7 +70,9 @@ def _rand_slug():
 
 @pytest_asyncio.fixture
 async def org(db_session):
-    o = Organisation(name="Test Org", slug=_rand_slug())
+    # Sedna's own organisation: most tests model the staff team. Tests about
+    # customers make their own customer organisation.
+    o = Organisation(name="Test Org", slug=_rand_slug(), kind="sedna")
     db_session.add(o)
     await db_session.commit()
     await db_session.refresh(o)

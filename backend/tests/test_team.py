@@ -4,7 +4,7 @@ from tests.conftest import auth_headers
 
 
 async def test_invite_creates_user_and_sends_email(client, admin):
-    with patch("app.routers.team.send_invite_email", new=AsyncMock()) as mock_email:
+    with patch("app.services.accounts.send_invite_email", new=AsyncMock()) as mock_email:
         resp = await client.post("/team/invite", headers=auth_headers(admin), json={
             "email": "newbie@example.com", "name": "New Bie", "role": "Learner",
         })
@@ -17,8 +17,8 @@ async def test_invite_creates_user_and_sends_email(client, admin):
 
 
 async def test_invite_fires_webhook(client, admin):
-    with patch("app.routers.team.send_invite_email", new=AsyncMock()), \
-         patch("app.routers.team.deliver_webhook", new=AsyncMock()) as mock_hook:
+    with patch("app.services.accounts.send_invite_email", new=AsyncMock()), \
+         patch("app.services.accounts.deliver_webhook", new=AsyncMock()) as mock_hook:
         resp = await client.post("/team/invite", headers=auth_headers(admin), json={
             "email": "hooked@example.com", "name": "Hook User", "role": "Learner",
         })

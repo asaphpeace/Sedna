@@ -8,6 +8,7 @@ from app.models.content import LearningRole, Tier, Module
 from app.models.user import User
 from app.schemas.content import LearningRoleOut, LearningRoleSummary
 from app.services.deps import current_user
+from app.services.visibility import viewer
 
 router = APIRouter(prefix="/paths", tags=["paths"])
 public_router = APIRouter(prefix="/public", tags=["public"])
@@ -57,7 +58,8 @@ async def list_paths(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    return _summaries(await _load_roles(db))
+    v = await viewer(db, user)
+    return _summaries(await _load_roles(db), audience=None if v.staff else "customer")
 
 
 @router.get("/{role_id}", response_model=LearningRoleOut)
@@ -77,7 +79,8 @@ async def get_path(
     all_placeholder = role is not None and not any(
         not m.is_placeholder for t in role.tiers for m in t.modules
     )
-    if not role or (all_placeholder and not user.is_admin):
+    v = await viewer(db, user)
+    if not role or not v.can_see_path(role) or (all_placeholder and not v.sees_drafts):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Path not found")
     return role

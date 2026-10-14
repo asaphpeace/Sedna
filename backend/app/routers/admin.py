@@ -16,15 +16,14 @@ from app.models.quiz import QuizAttempt, QuizOption, QuizQuestion
 from app.models.release import Release
 from app.models.social import ModuleComment
 from app.models.user import User
-from app.services.deps import current_user
+from app.services.deps import current_user, sedna_admin_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-def _require_admin(user: User = Depends(current_user)) -> User:
-    if not user.is_admin:
-        raise HTTPException(status_code=403, detail="Admin only")
-    return user
+# The catalogue is shared by every company, so only Sedna's own admins may
+# change it — a customer company's admin manages their people, not content.
+_require_admin = sedna_admin_user
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────

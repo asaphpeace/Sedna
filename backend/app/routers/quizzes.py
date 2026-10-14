@@ -7,10 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.models.content import LearningRole, Tier
 from app.models.quiz import QuizAttempt, QuizAttemptAnswer, QuizOption, QuizQuestion
 from app.models.user import User
 from app.services.cert_award import check_and_award_cert
 from app.services.deps import current_user
+from app.services.visibility import require_module_visible, viewer
 from app.services.gamification import award_xp, check_and_award_badges, update_streak
 from app.routers.webhooks import deliver_webhook
 
@@ -42,8 +44,9 @@ def _fmt_question(q: QuizQuestion) -> dict:
 async def get_module_quiz(
     module_id: int,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(current_user),
+    user: User = Depends(current_user),
 ):
+    await require_module_visible(db, user, module_id)
     result = await db.execute(
         select(QuizQuestion)
         .where(QuizQuestion.module_id == module_id)
@@ -57,8 +60,12 @@ async def get_module_quiz(
 async def get_tier_quiz(
     tier_id: int,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(current_user),
+    user: User = Depends(current_user),
 ):
+    tier = await db.get(Tier, tier_id)
+    role = tier and await db.get(LearningRole, tier.role_id)
+    if not role or not (await viewer(db, user)).can_see_path(role):
+        raise HTTPException(status_code=404, detail="Tier not found")
     result = await db.execute(
         select(QuizQuestion)
         .where(QuizQuestion.tier_id == tier_id)
@@ -78,6 +85,10 @@ async def submit_attempt(
 ):
     if not body.module_id and not body.tier_id:
         raise HTTPException(status_code=400, detail="module_id or tier_id required")
+    if body.module_id:
+        await require_module_visible(db, user, body.module_id)
+    else:
+        await get_tier_quiz(body.tier_id, db, user)  # 404s when the tier isn't visible
 
     filter_col = QuizQuestion.module_id if body.module_id else QuizQuestion.tier_id
     filter_val = body.module_id or body.tier_id

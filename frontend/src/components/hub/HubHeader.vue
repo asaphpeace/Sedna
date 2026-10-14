@@ -65,4 +65,5 @@ const onLearning = () => route.path.startsWith('/learning')
 /* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
 .brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 .demo-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: #FBEDC8; color: #633806; padding: 3px 8px; border-radius: 4px; }
+@media (max-width: 480px) { .brand:has(.demo-tag) .brand-sub { display: none; } }
 </style>

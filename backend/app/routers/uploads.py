@@ -13,7 +13,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 
 from app.models.user import User
-from app.services.deps import admin_user
+from app.services.deps import sedna_admin_user
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 
@@ -28,7 +28,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/image")
 async def upload_image(
     file: UploadFile,
-    user: User = Depends(admin_user),
+    user: User = Depends(sedna_admin_user),
 ):
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(400, "Only JPEG, PNG, GIF, or WebP images are allowed")

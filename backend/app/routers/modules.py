@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.content import Module, Tier
+from app.models.content import LearningRole, Module, Tier
 from app.models.user import User
 from app.schemas.content import ModuleOut
 from app.services.deps import current_user
+from app.services.visibility import require_module_visible, viewer
 
 router = APIRouter(prefix="/modules", tags=["modules"])
 
@@ -29,15 +30,22 @@ async def browse_modules(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    q = select(Module).options(selectinload(Module.tier))
-    if not user.is_admin:
+    v = await viewer(db, user)
+    q = (
+        select(Module).options(selectinload(Module.tier))
+        .join(Tier, Module.tier_id == Tier.id)
+        .join(LearningRole, Tier.role_id == LearningRole.id)
+    )
+    if not v.staff:
+        q = q.where(LearningRole.audience == "customer")
+    if not v.sees_drafts:
         # Placeholder outlines have no content yet: hidden from learners,
-        # still listed for admins who author them
+        # still listed for the Sedna admins who author them
         q = q.where(Module.is_placeholder == False)
     if tier_id:
         q = q.where(Module.tier_id == tier_id)
     elif path_id:
-        q = q.join(Tier, Module.tier_id == Tier.id).where(Tier.role_id == path_id)
+        q = q.where(Tier.role_id == path_id)
     if product:
         q = q.where(Module.product == product)
     if module_type:
@@ -53,10 +61,8 @@ async def get_module(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
+    await require_module_visible(db, user, module_id)
     result = await db.execute(
         select(Module).where(Module.id == module_id).options(selectinload(Module.tier))
     )
-    module = result.scalar_one_or_none()
-    if not module or (module.is_placeholder and not user.is_admin):
-        raise HTTPException(status_code=404, detail="Module not found")
-    return _with_role_id(module)
+    return _with_role_id(result.scalar_one())

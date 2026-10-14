@@ -14,6 +14,7 @@ from app.models.user import User
 from app.schemas.progress import ModuleProgressOut, RoleProgressOut
 from app.services.cert_award import check_and_award_cert
 from app.services.deps import current_user
+from app.services.visibility import require_module_visible, viewer
 from app.services.email import send_cert_email, send_near_cert_email
 from app.services.gamification import award_xp, check_and_award_badges, update_streak
 from app.services.notifications import create_notification, notify_near_cert
@@ -43,7 +44,8 @@ async def my_path_progress(
             selectinload(LearningRole.tiers).selectinload(Tier.modules)
         )
     )
-    roles = roles_result.scalars().all()
+    v = await viewer(db, user)
+    roles = [r for r in roles_result.scalars().all() if v.can_see_path(r)]
 
     prog_result = await db.execute(
         select(UserModuleProgress).where(UserModuleProgress.user_id == user.id)
@@ -81,10 +83,7 @@ async def start_module(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    result = await db.execute(select(Module).where(Module.id == module_id))
-    module = result.scalar_one_or_none()
-    if not module:
-        raise HTTPException(status_code=404, detail="Module not found")
+    module = await require_module_visible(db, user, module_id)
 
     existing = await db.execute(
         select(UserModuleProgress).where(
@@ -121,8 +120,7 @@ async def record_time(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    if not await db.get(Module, module_id):
-        raise HTTPException(status_code=404, detail="Module not found")
+    await require_module_visible(db, user, module_id)
     stmt = pg_insert(LearningTime).values(
         user_id=user.id, module_id=module_id, day=datetime.utcnow().date(), seconds=body.seconds,
     )
@@ -141,12 +139,7 @@ async def complete_module(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    module_result = await db.execute(
-        select(Module).where(Module.id == module_id)
-    )
-    module = module_result.scalar_one_or_none()
-    if not module:
-        raise HTTPException(status_code=404, detail="Module not found")
+    module = await require_module_visible(db, user, module_id)
 
     existing = await db.execute(
         select(UserModuleProgress).where(

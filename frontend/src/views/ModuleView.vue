@@ -6,6 +6,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { modulesApi, progressApi, savedApi, quizzesApi } from '@/api'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
 import ModuleComments from '@/components/ModuleComments.vue'
 import { productLabel } from '@/constants/products'
 
@@ -14,6 +15,8 @@ marked.setOptions({ breaks: true, gfm: true })
 const route = useRoute()
 const router = useRouter()
 const app = useAppStore()
+// Comments name learners, so they're shown to Sedna staff only
+const auth = useAuthStore()
 
 const module = ref<any>(null)
 const tierModules = ref<any[]>([])
@@ -584,7 +587,7 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             </div>
 
             <!-- Discussion -->
-            <ModuleComments :module-id="module.id" />
+            <ModuleComments v-if="auth.user?.is_sedna_staff" :module-id="module.id" />
           </div>
 
           <!-- Tab: Transcript -->
