@@ -44,8 +44,13 @@ const sections = computed<Section[]>(() => [
   {
     key: 'admin', label: 'Admin', show: () => !!auth.user?.is_admin, items: [
       { to: '/users', label: 'Users' },
-      { to: '/content', label: 'Content' },
-      ...(auth.user?.is_sedna_staff ? [{ to: '/impact', label: 'Learning impact' }] : []),
+      // The catalogue and cross-company views belong to Sedna's own admins;
+      // a customer company's admin manages their own people
+      ...(auth.user?.is_sedna_staff ? [
+        { to: '/companies', label: 'Companies' },
+        { to: '/content', label: 'Content' },
+        { to: '/impact', label: 'Learning impact' },
+      ] : []),
       { to: '/analytics', label: 'Analytics' },
       { to: '/integrations', label: 'Integrations' },
     ],
@@ -176,4 +181,5 @@ watch(() => route.path, () => { menuOpen.value = false })
 /* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
 .brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 .demo-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: #FBEDC8; color: #633806; padding: 3px 8px; border-radius: 4px; }
+@media (max-width: 480px) { .brand:has(.demo-tag) .brand-sub { display: none; } }
 </style>

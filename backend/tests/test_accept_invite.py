@@ -8,7 +8,7 @@ from tests.conftest import auth_headers
 
 
 async def _invite(client, admin, email="newbie@example.com"):
-    with patch("app.routers.team.send_invite_email", new=AsyncMock()) as mock_email:
+    with patch("app.services.accounts.send_invite_email", new=AsyncMock()) as mock_email:
         resp = await client.post("/team/invite", headers=auth_headers(admin), json={
             "email": email, "name": "New Bie", "role": "Learner",
         })

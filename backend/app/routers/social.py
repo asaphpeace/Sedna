@@ -8,9 +8,11 @@ from app.database import get_db
 from app.models.content import Module
 from app.models.social import CommentLike, ModuleComment
 from app.models.user import User
-from app.services.deps import current_user
+from app.services.deps import sedna_staff_user
 from app.routers.webhooks import deliver_webhook
 
+# Comments name learners, so they stay among Sedna staff: customers never
+# see other companies' people (and, for now, don't see comments at all)
 router = APIRouter(prefix="/social", tags=["social"])
 
 
@@ -23,7 +25,7 @@ class CreateComment(BaseModel):
 async def get_comments(
     module_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(sedna_staff_user),
 ):
     result = await db.execute(
         select(ModuleComment)
@@ -64,7 +66,7 @@ async def create_comment(
     module_id: int,
     body: CreateComment,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(sedna_staff_user),
 ):
     if len(body.body.strip()) < 2:
         raise HTTPException(status_code=400, detail="Comment too short")
@@ -96,7 +98,7 @@ async def create_comment(
 async def delete_comment(
     comment_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(sedna_staff_user),
 ):
     result = await db.execute(
         select(ModuleComment).where(ModuleComment.id == comment_id)
@@ -115,7 +117,7 @@ async def delete_comment(
 async def toggle_like(
     comment_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(sedna_staff_user),
 ):
     existing = await db.execute(
         select(CommentLike).where(

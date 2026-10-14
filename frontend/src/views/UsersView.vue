@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { teamApi } from '@/api'
+import RemovePersonDialog from '@/components/RemovePersonDialog.vue'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const users = ref<any[]>([])
 const showInvite = ref(false)
@@ -42,6 +46,18 @@ async function saveEdit() {
   const { data } = await teamApi.list()
   users.value = data
   editingUser.value = null
+}
+
+// ── Remove on request ────────────────────────────────────
+const removing = ref<any>(null)
+function startRemove() {
+  removing.value = editingUser.value
+  editingUser.value = null
+}
+async function afterRemove() {
+  removing.value = null
+  const { data } = await teamApi.list()
+  users.value = data
 }
 </script>
 
@@ -145,19 +161,26 @@ async function saveEdit() {
         <div class="field">
           <label class="checkbox-label">
             <input type="checkbox" v-model="editForm.is_admin" />
-            Admin — can manage content, users, and settings
+            {{ auth.user?.is_sedna_staff ? 'Admin — can manage content, people and settings' : 'Admin — can invite and manage people in your company' }}
           </label>
         </div>
+        <button v-if="editingUser.id !== auth.user?.id" class="remove-link" @click="startRemove">
+          <i class="ti ti-user-x" /> Remove from the Learning Hub…
+        </button>
         <div class="modal-actions">
           <button class="btn btn-ghost" @click="editingUser = null">Cancel</button>
           <button class="btn btn-primary" :disabled="!editForm.name" @click="saveEdit">Save changes</button>
         </div>
       </div>
     </div>
+
+    <RemovePersonDialog v-if="removing" :person="removing" @close="removing = null" @removed="afterRemove" />
   </div>
 </template>
 
 <style scoped>
+.remove-link { align-self: flex-start; background: none; border: none; padding: 4px 0; font-size: 14px; color: #B0322B; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; min-height: 44px; }
+.remove-link:hover { text-decoration: underline; }
 .page { padding: 40px 24px 72px; max-width: 900px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
 .page-title { font-size: 40px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }

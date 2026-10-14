@@ -96,7 +96,7 @@ async def learning_impact(
     ]
     scoped_org_ids = {o.id for o in scoped_orgs}
     users = (await db.execute(
-        select(User).where(User.org_id.in_(scoped_org_ids), User.status == "active")
+        select(User).where(User.org_id.in_(scoped_org_ids), User.status.in_(("active", "removed")))
     )).scalars().all() if scoped_org_ids else []
     user_by_id = {u.id: u for u in users}
     user_ids = list(user_by_id)
@@ -167,6 +167,7 @@ async def learning_impact(
     companies = []
     for o in scoped_orgs:
         members = {u.id for u in users if u.org_id == o.id}
+        current = {u.id for u in users if u.org_id == o.id and u.status == "active"}
         if not members:
             continue
         active = {p.user_id for p in progress if p.user_id in members and (_in(p.started_at, start, end) or _in(p.completed_at, start, end))}
@@ -175,9 +176,9 @@ async def learning_impact(
             "org_id": o.id,
             "name": o.name,
             "kind": o.kind,
-            "users": len(members),
-            "active": len(active),
-            "coverage": round(len(active) / len(members) * 100),
+            "users": len(current),
+            "active": len(active & current),
+            "coverage": round(len(active & current) / len(current) * 100) if current else 0,
             "lessons": sum(1 for p in done if p.user_id in members and _in(p.completed_at, start, end)),
             "certificates": sum(1 for c in certs if c.user_id in members and _in(c.issued_at, start, end)),
             "tracked_minutes": round(sum(t.seconds for t in times if t.user_id in members and _day_in(t.day, start, end)) / 60),
@@ -237,7 +238,7 @@ async def learning_impact(
     idle = []
     for uid, pids in unfinished.items():
         seen = last_seen.get(uid)
-        if seen and (now - seen).days >= IDLE_DAYS:
+        if user_by_id[uid].status == "active" and seen and (now - seen).days >= IDLE_DAYS:
             u = user_by_id[uid]
             idle.append({
                 "user_id": uid,

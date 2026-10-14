@@ -85,12 +85,14 @@ async def test_completing_module_twice_does_not_duplicate_notification(client, u
     assert len(complete_notifs) == 1
 
 
-async def test_all_placeholder_tier_still_awards_cert_when_all_completed(client, user, tier_with_placeholder_modules):
+async def test_all_placeholder_tier_still_awards_cert_when_all_completed(client, admin, tier_with_placeholder_modules):
     """A freshly-imported course (every module still a stub) must not be
     permanently uncertifiable — completing everything available should
     still earn the cert, exactly as reported: a learner finished all of
-    Foundations (100% placeholder content at the time) and got no cert."""
-    headers = auth_headers(user)
+    Foundations (100% placeholder content at the time) and got no cert.
+    Placeholders are now hidden from learners, so only Sedna admins (who
+    author them) can reach and complete them."""
+    headers = auth_headers(admin)
     m1, m2 = tier_with_placeholder_modules.modules[0], tier_with_placeholder_modules.modules[1]
 
     r1 = await client.post(f"/progress/modules/{m1.id}/complete", headers=headers)

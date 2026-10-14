@@ -26,7 +26,7 @@ async def current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     result = await db.execute(select(User).where(User.id == token_data.user_id))
     user = result.scalar_one_or_none()
-    if not user:
+    if not user or user.status == "removed":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     # DB column is naive (TIMESTAMP WITHOUT TIME ZONE, matching the rest of
@@ -46,14 +46,29 @@ async def admin_user(user: User = Depends(current_user)) -> User:
     return user
 
 
+async def is_sedna_staff(db: AsyncSession, user: User) -> bool:
+    """Whether the user belongs to Sedna's own organisation. Customers only
+    ever see customer content and never another company's people."""
+    org = await db.get(Organisation, user.org_id)
+    return bool(org and org.kind == "sedna")
+
+
+async def sedna_staff_user(
+    user: User = Depends(current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    if not await is_sedna_staff(db, user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sedna staff only")
+    return user
+
+
 async def sedna_admin_user(
     user: User = Depends(admin_user),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """An admin in Sedna's own organisation — the only people who may see
-    learning data across every customer company."""
-    org = await db.get(Organisation, user.org_id)
-    if not org or org.kind != "sedna":
+    """An admin in Sedna's own organisation — the only people who may change
+    the shared course catalogue or see learning data across every company."""
+    if not await is_sedna_staff(db, user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sedna admin required")
     return user
 

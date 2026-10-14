@@ -1,6 +1,3 @@
-import secrets
-from datetime import datetime, timedelta
-
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,10 +6,7 @@ from app.database import get_db
 from app.models.user import Organisation, User
 from app.schemas.user import UserOut, UserInvite, UserUpdate
 from app.services.deps import current_user, admin_user
-from app.services.email import send_invite_email
-from app.routers.webhooks import deliver_webhook
-
-INVITE_TOKEN_TTL = timedelta(days=7)
+from app.services import accounts
 
 router = APIRouter(prefix="/team", tags=["team"])
 
@@ -23,7 +17,7 @@ async def list_team(
     user: User = Depends(current_user),
 ):
     result = await db.execute(
-        select(User).where(User.org_id == user.org_id).order_by(User.name)
+        select(User).where(User.org_id == user.org_id, User.status != "removed").order_by(User.name)
     )
     return result.scalars().all()
 
@@ -34,35 +28,8 @@ async def invite_user(
     db: AsyncSession = Depends(get_db),
     admin: User = Depends(admin_user),
 ):
-    import random
-    colors = ["#6E2BF0", "#0E9E6E", "#B26A00", "#0B8FB0", "#4338CA"]
-    new_user = User(
-        org_id=admin.org_id,
-        email=body.email,
-        name=body.name,
-        initial=body.name[0].upper(),
-        color=random.choice(colors),
-        role=body.role,
-        status="invited",
-        invite_token=secrets.token_urlsafe(32),
-        invite_token_expires_at=datetime.utcnow() + INVITE_TOKEN_TTL,
-    )
-    db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
-
-    org_result = await db.execute(select(Organisation).where(Organisation.id == admin.org_id))
-    org = org_result.scalar_one_or_none()
-    await send_invite_email(
-        new_user.email, new_user.name, admin.name, new_user.invite_token,
-        org.name if org else "your team",
-    )
-
-    await deliver_webhook(db, admin.org_id, "user.invited", {
-        "user_id": new_user.id, "email": new_user.email, "invited_by": admin.id,
-    })
-
-    return new_user
+    org = await db.get(Organisation, admin.org_id)
+    return await accounts.invite(db, org, admin, body.email, body.name, body.role)
 
 
 @router.patch("/{user_id}", response_model=UserOut)
@@ -79,6 +46,9 @@ async def update_user(
     target = result.scalar_one_or_none()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if body.status == "removed":
+        # Removal has to go through anonymisation, never a bare status flip
+        raise HTTPException(status_code=400, detail="Use remove to take someone out of the platform")
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(target, field, value)
     await db.commit()

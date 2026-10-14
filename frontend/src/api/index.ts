@@ -93,6 +93,16 @@ export const teamApi = {
   invite: (data: { email: string; name: string; role?: string }) =>
     client.post('/team/invite', data),
   update: (userId: number, data: object) => client.patch(`/team/${userId}`, data),
+  remove: (userId: number) => client.delete(`/admin/users/${userId}`),
+}
+
+// ── Companies (Sedna admins) ──────────────────────────
+export const companiesApi = {
+  list: () => client.get('/admin/companies'),
+  create: (name: string) => client.post('/admin/companies', { name }),
+  users: (orgId: number) => client.get(`/admin/companies/${orgId}/users`),
+  invite: (orgId: number, data: { email: string; name: string; role?: string; is_admin: boolean }) =>
+    client.post(`/admin/companies/${orgId}/invite`, data),
 }
 
 // ── Releases ──────────────────────────────────────────

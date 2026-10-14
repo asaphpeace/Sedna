@@ -13,6 +13,7 @@ from app.routers import (
     analytics,
     auth,
     certificates,
+    companies,
     compliance,
     gamification,
     impact,
@@ -62,6 +63,7 @@ app.include_router(gamification.router)
 app.include_router(notifications.router)
 app.include_router(analytics.router)
 app.include_router(impact.router)
+app.include_router(companies.router)
 app.include_router(social.router)
 app.include_router(compliance.router)
 app.include_router(webhooks.router)
