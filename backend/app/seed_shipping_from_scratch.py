@@ -5,7 +5,7 @@ Source: Becki's "Shipping from Scratch · Sedna VMS Industry Knowledge" guide
 the guide's order, plus the guide's glossary as a reference lesson. Each tier
 ends in a short quiz.
 
-Corrections applied to the source text, pending Becki's sign-off:
+Accuracy updates made while converting the guide into lessons:
   - Panama Canal new locks take ~51.25m beam; "post-Panamax" refers to the old locks
   - "The flat" is the published WS 100 rate, not the agreed percentage
   - LR2 is 80–160k DWT (Aframax 80–120k) — the guide used both ranges
