@@ -18,6 +18,8 @@ class LearningRole(Base):
     audience: Mapped[str] = mapped_column(String(20), default="customer")  # customer | internal
     products: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    # Drafts are visible only to Sedna admins, so a path can be built in private
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
 
     tiers: Mapped[list["Tier"]] = relationship(
         back_populates="role", order_by="Tier.sort_order"

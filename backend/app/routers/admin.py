@@ -70,7 +70,26 @@ class PathOut(BaseModel):
     sort_order: int
     tier_count: int
     mod_count: int
+    ready_count: int  # lessons learners can actually open (not drafts)
+    is_published: bool
     model_config = {"from_attributes": True}
+
+
+class PublishIn(BaseModel):
+    published: bool
+
+
+def _path_out(role: LearningRole, tiers: list | None = None) -> PathOut:
+    tiers = role.tiers if tiers is None else tiers
+    modules = [m for t in tiers for m in t.modules]
+    return PathOut(
+        id=role.id, name=role.name, description=role.description,
+        icon=role.icon, color=role.color, audience=role.audience,
+        products=role.products, sort_order=role.sort_order,
+        tier_count=len(tiers), mod_count=len(modules),
+        ready_count=sum(1 for m in modules if not m.is_placeholder),
+        is_published=role.is_published,
+    )
 
 
 class TierOut(BaseModel):
@@ -166,16 +185,7 @@ async def list_paths(
         .order_by(LearningRole.sort_order)
     )
     roles = result.scalars().all()
-    out = []
-    for r in roles:
-        mod_count = sum(len(t.modules) for t in r.tiers)
-        out.append(PathOut(
-            id=r.id, name=r.name, description=r.description,
-            icon=r.icon, color=r.color, audience=r.audience,
-            products=r.products, sort_order=r.sort_order,
-            tier_count=len(r.tiers), mod_count=mod_count,
-        ))
-    return out
+    return [_path_out(r) for r in roles]
 
 
 @router.post("/paths", response_model=PathOut)
@@ -184,16 +194,12 @@ async def create_path(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(_require_admin),
 ):
-    role = LearningRole(**body.model_dump())
+    # New paths start as drafts: built in private, published when ready
+    role = LearningRole(**body.model_dump(), is_published=False)
     db.add(role)
     await db.commit()
     await db.refresh(role)
-    return PathOut(
-        id=role.id, name=role.name, description=role.description,
-        icon=role.icon, color=role.color, audience=role.audience,
-        products=role.products, sort_order=role.sort_order,
-        tier_count=0, mod_count=0,
-    )
+    return _path_out(role, tiers=[])
 
 
 @router.patch("/paths/{path_id}", response_model=PathOut)
@@ -214,14 +220,34 @@ async def update_path(
     for k, v in body.model_dump().items():
         setattr(role, k, v)
     await db.commit()
-    await db.refresh(role)
-    mod_count = sum(len(t.modules) for t in role.tiers)
-    return PathOut(
-        id=role.id, name=role.name, description=role.description,
-        icon=role.icon, color=role.color, audience=role.audience,
-        products=role.products, sort_order=role.sort_order,
-        tier_count=len(role.tiers), mod_count=mod_count,
-    )
+    return _path_out(await _load_path(db, path_id))
+
+
+async def _load_path(db: AsyncSession, path_id: int) -> LearningRole:
+    role = (await db.execute(
+        select(LearningRole)
+        .where(LearningRole.id == path_id)
+        .options(selectinload(LearningRole.tiers).selectinload(Tier.modules))
+        .execution_options(populate_existing=True)
+    )).scalar_one_or_none()
+    if not role:
+        raise HTTPException(404, "Path not found")
+    return role
+
+
+@router.post("/paths/{path_id}/publish", response_model=PathOut)
+async def publish_path(
+    path_id: int,
+    body: PublishIn,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_require_admin),
+):
+    role = await _load_path(db, path_id)
+    if body.published and not any(not m.is_placeholder for t in role.tiers for m in t.modules):
+        raise HTTPException(400, "Add at least one finished lesson before publishing")
+    role.is_published = body.published
+    await db.commit()
+    return _path_out(await _load_path(db, path_id))
 
 
 @router.delete("/paths/{path_id}")
