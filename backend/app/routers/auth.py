@@ -9,9 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.org_structure import Department
 from app.models.user import Organisation, User
-from app.schemas.auth import AcceptInviteRequest, InviteInfo, LoginRequest, TokenData, TokenResponse
+from app.schemas.auth import (
+    AcceptInviteRequest, ChangePasswordRequest, InviteInfo, LoginRequest, TokenData, TokenResponse,
+)
 from app.schemas.user import UserOut
-from app.services.auth import authenticate_user, create_access_token, hash_password
+from app.services.auth import authenticate_user, create_access_token, hash_password, verify_password
 from app.services.deps import current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -29,6 +31,23 @@ async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends
         )
     token = create_access_token(TokenData(user_id=user.id, org_id=user.org_id))
     return TokenResponse(access_token=token)
+
+
+@router.post("/change-password", status_code=204)
+@limiter.limit("10/minute")
+async def change_password(
+    request: Request,
+    body: ChangePasswordRequest,
+    user: User = Depends(current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    # Rate-limited like sign-in, since a wrong current password is a guess
+    if not user.password_hash or not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your current password is incorrect.")
+    if body.new_password == body.current_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Choose a password different from your current one.")
+    user.password_hash = hash_password(body.new_password)
+    await db.commit()
 
 
 @router.get("/me", response_model=UserOut)
