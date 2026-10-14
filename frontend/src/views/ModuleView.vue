@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
+import { useLearningTime } from '@/composables/useLearningTime'
 import { useRoute, useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -64,6 +65,7 @@ async function loadModule(id: number) {
 }
 
 onMounted(() => loadModule(Number(route.params.id)))
+useLearningTime(computed(() => Number(route.params.id) || null))
 watch(
   () => route.params.id,
   (id) => { if (id) loadModule(Number(id)) }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// The demo stack (port 5176) runs on fictional data; say so on every page
+const isDemo = import.meta.env.VITE_DEMO === '1'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -15,6 +17,7 @@ const onLearning = () => route.path.startsWith('/learning')
         <img src="/sedna-logo.png" alt="" width="32" height="32" class="brand-mark" />
         <span class="brand-name">Sedna</span>
         <span class="brand-sub">LEARNING HUB</span>
+        <span v-if="isDemo" class="demo-tag" title="Fictional companies and learners for demonstrations">DEMO DATA</span>
       </RouterLink>
       <nav aria-label="Hub" class="nav">
         <RouterLink :to="{ path: '/', hash: '#kb' }" class="nav-link">Knowledge Base</RouterLink>
@@ -61,4 +64,5 @@ const onLearning = () => route.path.startsWith('/learning')
 
 /* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
 .brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
+.demo-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: #FBEDC8; color: #633806; padding: 3px 8px; border-radius: 4px; }
 </style>

@@ -37,6 +37,8 @@ async def me(user: User = Depends(current_user), db: AsyncSession = Depends(get_
     if not user.is_admin:
         result = await db.execute(select(Department).where(Department.manager_user_id == user.id))
         out.is_manager = result.scalars().first() is not None
+    org = await db.get(Organisation, user.org_id)
+    out.is_sedna_staff = bool(org and org.kind == "sedna")
     return out
 
 

@@ -67,6 +67,7 @@ export const progressApi = {
   myPathProgress: () => client.get('/progress/me/paths'),
   start: (moduleId: number) => client.post(`/progress/modules/${moduleId}/start`),
   complete: (moduleId: number) => client.post(`/progress/modules/${moduleId}/complete`),
+  time: (moduleId: number, seconds: number) => client.post(`/progress/modules/${moduleId}/time`, { seconds }),
 }
 
 // ── Certificates ──────────────────────────────────────
@@ -133,6 +134,7 @@ export const notificationsApi = {
 export const analyticsApi = {
   me: () => client.get('/analytics/me'),
   org: () => client.get('/analytics/org'),
+  impact: (params: Record<string, string | number | undefined>) => client.get('/analytics/impact', { params }),
 }
 
 // ── Social ────────────────────────────────────────────
