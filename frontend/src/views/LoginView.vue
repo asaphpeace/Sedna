@@ -33,6 +33,7 @@ async function submit() {
     <div class="login-card">
       <!-- Logo -->
       <RouterLink to="/" class="login-logo" aria-label="Back to the Learning Hub">
+        <img src="/sedna-logo.png" alt="" width="32" height="32" class="brand-mark" />
         <span class="login-brand">Sedna</span>
         <span class="login-sub">LEARNING HUB</span>
       </RouterLink>
@@ -88,7 +89,7 @@ async function submit() {
   background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
   box-shadow: var(--shadow-md); padding: 40px; width: 100%; max-width: 440px;
 }
-.login-logo { display: flex; align-items: baseline; gap: 10px; margin-bottom: 32px; color: var(--text-primary); }
+.login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; color: var(--text-primary); }
 .login-brand { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
 .login-sub { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--text-muted); }
 .login-heading { font-size: 32px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
@@ -99,4 +100,7 @@ async function submit() {
 .error-msg { font-size: 14px; color: var(--coral); background: var(--coral-bg); padding: 10px 14px; border-radius: var(--radius-sm); }
 .login-btn { width: 100%; margin-top: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
+.brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 </style>

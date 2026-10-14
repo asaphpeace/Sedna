@@ -14,6 +14,7 @@ const onLearning = () => route.path.startsWith('/learning')
   <header class="hub-header">
     <div class="hub-header-inner">
       <RouterLink to="/" class="brand">
+        <img src="/sedna-logo.png" alt="" width="32" height="32" class="brand-mark" />
         <span class="brand-name">Sedna</span>
         <span class="brand-sub">LEARNING HUB</span>
         <span v-if="isDemo" class="demo-tag" title="Fictional companies and learners for demonstrations">DEMO DATA</span>
@@ -60,5 +61,8 @@ const onLearning = () => route.path.startsWith('/learning')
 .sign-in:hover { background: #4B1FA8; }
 .user-pending { width: 120px; min-height: 44px; }
 @media (max-width: 640px) { .nav { order: 3; width: 100%; gap: 18px; } }
+
+/* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
+.brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 .demo-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; background: #FBEDC8; color: #633806; padding: 3px 8px; border-radius: 4px; }
 </style>

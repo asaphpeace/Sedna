@@ -60,6 +60,7 @@ async function submit() {
   <div class="login-page">
     <div class="login-card">
       <div class="login-logo">
+        <img src="/sedna-logo.png" alt="" width="32" height="32" class="brand-mark" />
         <span class="login-brand">Sedna</span>
         <span class="login-sub">LEARNING HUB</span>
       </div>
@@ -119,7 +120,7 @@ async function submit() {
   background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
   box-shadow: var(--shadow-md); padding: 40px; width: 100%; max-width: 440px;
 }
-.login-logo { display: flex; align-items: baseline; gap: 10px; margin-bottom: 32px; }
+.login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
 .login-brand { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
 .login-sub { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--text-muted); }
 .login-heading { font-size: 32px; line-height: 1.12; font-weight: 500; letter-spacing: -0.012em; }
@@ -132,4 +133,7 @@ async function submit() {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-msg { font-size: 15px; color: var(--text-muted); }
 .input:disabled { background: var(--bg); color: var(--text-muted); }
+
+/* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
+.brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 </style>
