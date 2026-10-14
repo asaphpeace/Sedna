@@ -86,20 +86,7 @@ const tierLabel = computed(() => {
             <!-- Header -->
             <div class="cert-head">
               <div class="cert-logo-row">
-                <div class="cert-logo-icon">
-                  <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <defs>
-                      <mask id="certMark">
-                        <rect width="100" height="100" fill="black"/>
-                        <rect x="18" y="15" width="46" height="46" rx="7" fill="white"/>
-                        <rect x="36" y="39" width="46" height="46" rx="7" fill="white"/>
-                        <rect x="36" y="39" width="14" height="14" fill="black"/>
-                        <rect x="50" y="53" width="14" height="14" fill="black"/>
-                      </mask>
-                    </defs>
-                    <rect width="100" height="100" fill="#fff" mask="url(#certMark)"/>
-                  </svg>
-                </div>
+                <img src="/sedna-logo.png" alt="" width="36" height="36" class="cert-logo-mark" />
                 <div>
                   <div class="cert-brand">Sedna</div>
                   <div class="cert-brand-sub">LEARNING HUB</div>
@@ -184,7 +171,8 @@ const tierLabel = computed(() => {
 
 .cert-head { display: flex; align-items: flex-start; justify-content: space-between; position: relative; margin-bottom: 40px; }
 .cert-logo-row { display: flex; align-items: center; gap: 10px; }
-.cert-logo-icon { width: 36px; height: 36px; background: var(--purple-light); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+/* The Sedna mark exactly as supplied — fixed square, never stretched or recoloured */
+.cert-logo-mark { width: 36px; height: 36px; flex: none; object-fit: contain; display: block; }
 .cert-brand { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
 .cert-brand-sub { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; color: var(--text-muted); margin-top: 4px; }
 .cert-cred-block { text-align: right; }

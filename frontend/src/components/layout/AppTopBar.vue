@@ -75,6 +75,7 @@ watch(() => route.path, () => { menuOpen.value = false })
   <header class="topbar">
     <div class="topbar-inner">
       <RouterLink to="/" class="brand" aria-label="Sedna Learning Hub">
+        <img src="/sedna-logo.png" alt="" width="32" height="32" class="brand-mark" />
         <span class="brand-name">Sedna</span>
         <span class="brand-sub">LEARNING HUB</span>
       </RouterLink>
@@ -167,4 +168,7 @@ watch(() => route.path, () => { menuOpen.value = false })
   .mobile-link { min-height: 44px; display: flex; align-items: center; font-size: 15px; color: var(--text-secondary); }
   .mobile-link.active { color: var(--purple); font-weight: 500; }
 }
+
+/* The Sedna mark: used exactly as supplied — fixed square, never stretched or recoloured */
+.brand-mark { width: 32px; height: 32px; flex: none; object-fit: contain; display: block; }
 </style>
