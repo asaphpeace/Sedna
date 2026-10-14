@@ -140,15 +140,52 @@ async function openPath(path: any) {
 }
 
 // ── Path CRUD ──────────────────────────────────────────
+const editingPathId = ref<number | null>(null)
+
 function openNewPath() {
+  editingPathId.value = null
   pathForm.value = { name: '', description: '', audience: 'customer', icon: 'ti-user', color: 'purple', products: ['vms'], sort_order: paths.value.length }
   showNewPath.value = true
 }
 
+function openEditPath() {
+  const p = selectedPath.value
+  editingPathId.value = p.id
+  pathForm.value = { name: p.name, description: p.description, audience: p.audience, icon: p.icon, color: p.color, products: [...(p.products?.length ? p.products : ['vms'])], sort_order: p.sort_order }
+  showNewPath.value = true
+}
+
 async function savePath() {
-  await adminApi.createPath(pathForm.value)
+  if (editingPathId.value) {
+    const { data } = await adminApi.updatePath(editingPathId.value, pathForm.value)
+    selectedPath.value = data
+  } else {
+    // New paths start as drafts: only Sedna admins see them until published
+    const { data } = await adminApi.createPath(pathForm.value)
+    showNewPath.value = false
+    await loadAll()
+    await openPath(data)
+    return
+  }
   showNewPath.value = false
   await loadAll()
+}
+
+// ── Publishing ─────────────────────────────────────────
+const publishError = ref('')
+async function setPublished(published: boolean) {
+  publishError.value = ''
+  try {
+    const { data } = await adminApi.publishPath(selectedPath.value.id, published)
+    selectedPath.value = data
+    await loadAll()
+  } catch (e: any) {
+    publishError.value = e?.response?.data?.detail ?? "That didn't work. Try again."
+  }
+}
+
+function previewPath(id: number) {
+  window.open(`/paths/${id}`, '_blank')
 }
 
 async function deletePath(id: number) {
@@ -459,12 +496,14 @@ async function deleteQuestion(id: number) {
 const statusMock: Record<string, { label: string; bg: string; fg: string }> = {
   Published: { label: 'Published', bg: '#D3F4DE', fg: '#1F8A5B' },
   Draft:     { label: 'Draft',     bg: '#F1F2F4', fg: '#6B6C75' },
-  'In review':{ label: 'In review', bg: '#FBEDC8', fg: '#633806' },
+  'Outline only': { label: 'Outline only', bg: '#FBEDC8', fg: '#633806' },
 }
 
 function pathStatus(path: any) {
-  // simple heuristic: no modules = Draft, else Published
-  return path.mod_count === 0 ? statusMock['Draft'] : statusMock['Published']
+  if (!path.is_published) return statusMock['Draft']
+  // Published but nothing finished yet: learners see nothing, so say so
+  if (path.ready_count === 0) return statusMock['Outline only']
+  return statusMock['Published']
 }
 
 // Releases have their own product domain (includes "academy", which paths/
@@ -539,14 +578,17 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
         <table class="data-table">
           <thead>
             <tr>
-              <th>Path</th><th>Audience</th><th>Modules</th><th>Status</th><th></th>
+              <th>Path</th><th>Audience</th><th>Lessons ready</th><th>Status</th><th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="p in paths" :key="p.id" class="clickable-row" @click="openPath(p)">
               <td class="mod-title-cell">{{ p.name }}</td>
               <td><span class="audience-tag">{{ p.audience === 'internal' ? 'Internal' : 'Customer' }}</span></td>
-              <td><span :class="['mod-count', p.mod_count > 0 ? 'has-mods' : '']">{{ p.mod_count }}</span></td>
+              <td>
+                <span :class="['mod-count', p.ready_count > 0 ? 'has-mods' : '']">{{ p.ready_count }}</span>
+                <span v-if="p.mod_count > p.ready_count" class="muted"> + {{ p.mod_count - p.ready_count }} draft{{ p.mod_count - p.ready_count === 1 ? '' : 's' }}</span>
+              </td>
               <td>
                 <span class="status-pill" :style="{ background: pathStatus(p).bg, color: pathStatus(p).fg }">
                   {{ pathStatus(p).label }}
@@ -570,9 +612,28 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
             <i :class="['ti', selectedPath.icon]" />
             <div>
               <div class="path-detail-name">{{ selectedPath.name }}</div>
-              <div class="path-detail-meta">{{ selectedPath.audience }} · {{ selectedPath.mod_count }} modules · {{ tiers.length }} tiers</div>
+              <div class="path-detail-meta">
+                {{ selectedPath.audience === 'internal' ? 'Sedna staff' : 'Customers' }} · {{ selectedPath.ready_count }} of {{ selectedPath.mod_count }} lessons ready · {{ tiers.length }} tiers
+              </div>
             </div>
           </div>
+          <div class="path-actions">
+            <span class="status-pill" :style="{ background: pathStatus(selectedPath).bg, color: pathStatus(selectedPath).fg }">
+              {{ pathStatus(selectedPath).label }}
+            </span>
+            <button class="btn btn-ghost btn-sm" @click="openEditPath"><i class="ti ti-pencil" /> Edit details</button>
+            <button class="btn btn-ghost btn-sm" @click="previewPath(selectedPath.id)"><i class="ti ti-eye" /> Preview path</button>
+            <button v-if="selectedPath.is_published" class="btn btn-ghost btn-sm" @click="setPublished(false)">Unpublish</button>
+            <button v-else class="btn btn-primary btn-sm" :disabled="!selectedPath.ready_count" @click="setPublished(true)"
+              :title="selectedPath.ready_count ? '' : 'Add a finished lesson first'">
+              <i class="ti ti-world-upload" /> Publish
+            </button>
+          </div>
+          <p class="publish-note">
+            <template v-if="selectedPath.is_published">Learners {{ selectedPath.audience === 'internal' ? 'at Sedna' : 'at every customer company' }} can see this path. Lessons marked Draft stay hidden.</template>
+            <template v-else>Only Sedna admins can see this path while it's a draft. Publish it when at least one lesson is finished.</template>
+          </p>
+          <p v-if="publishError" class="publish-error">{{ publishError }}</p>
         </div>
 
         <!-- Tiers accordion -->
@@ -613,7 +674,10 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
                 </span>
                 <div>
                   <div class="mod-row-title">{{ mod.title }}</div>
-                  <div class="mod-row-meta">{{ mod.duration_mins }} min · {{ productLabel(mod.product) }}</div>
+                  <div class="mod-row-meta">
+                    <span v-if="mod.is_placeholder" class="draft-tag">Draft</span>
+                    {{ mod.duration_mins }} min · {{ productLabel(mod.product) }}
+                  </div>
                 </div>
               </div>
               <div class="module-row-right">
@@ -663,7 +727,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
     <div v-if="showNewPath" class="modal-backdrop" @click.self="showNewPath = false">
       <div class="modal">
         <div class="modal-head">
-          <span class="modal-title">New learning path</span>
+          <span class="modal-title">{{ editingPathId ? 'Edit path details' : 'New learning path' }}</span>
           <button class="icon-btn" @click="showNewPath = false"><i class="ti ti-x" /></button>
         </div>
         <div class="modal-body">
@@ -694,7 +758,7 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
         </div>
         <div class="modal-foot">
           <button class="btn btn-ghost" @click="showNewPath = false">Cancel</button>
-          <button class="btn btn-primary" :disabled="!pathForm.name" @click="savePath">Create path</button>
+          <button class="btn btn-primary" :disabled="!pathForm.name" @click="savePath">{{ editingPathId ? 'Save details' : 'Create draft path' }}</button>
         </div>
       </div>
     </div>
@@ -870,6 +934,10 @@ const typeFg:   Record<string, string>  = { v: '#7A3FE5', a: '#633806', l: '#4D2
           </div>
         </div>
         <div class="modal-foot">
+          <label class="draft-check">
+            <input v-model="moduleForm.is_placeholder" type="checkbox" />
+            Draft — hidden from learners until you untick this
+          </label>
           <button class="btn btn-ghost" @click="showModuleEditor = false">Cancel</button>
           <button class="btn btn-primary" :disabled="!moduleForm.title" @click="saveModule">
             {{ editingModule ? 'Save changes' : 'Create module' }}
@@ -1021,7 +1089,12 @@ tr:last-child td { border-bottom: none; }
 
 /* Path detail */
 .path-detail { display: flex; flex-direction: column; gap: 12px; }
-.path-detail-header { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+.path-detail-header { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.path-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.publish-note { flex-basis: 100%; font-size: 14px; color: var(--text-secondary); margin: 0; }
+.publish-error { flex-basis: 100%; font-size: 14px; color: #B0322B; margin: 0; }
+.draft-tag { font-size: 12px; padding: 1px 6px; border-radius: 4px; background: #FBEDC8; color: #633806; margin-right: 4px; }
+.draft-check { margin-right: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); min-height: 44px; }
 .path-name-badge { display: flex; align-items: center; gap: 14px; }
 .path-name-badge > i { font-size: 24px; color: var(--purple); }
 .path-detail-name { font-size: 16px; font-weight: 500; }

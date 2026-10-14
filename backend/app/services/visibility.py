@@ -1,7 +1,8 @@
 """Who may see which part of the shared course catalogue.
 
-Sedna staff see every path. Customers see only customer paths. Placeholder
-outlines (no content yet) are visible only to Sedna admins, who author them.
+Sedna staff see every published path. Customers see only published customer
+paths. Draft paths and draft lessons (placeholder outlines included) are
+visible only to Sedna admins, who author them.
 """
 from dataclasses import dataclass
 
@@ -20,6 +21,8 @@ class Viewer:
     sees_drafts: bool
 
     def can_see_path(self, role: LearningRole) -> bool:
+        if not role.is_published and not self.sees_drafts:
+            return False
         return self.staff or role.audience == "customer"
 
 

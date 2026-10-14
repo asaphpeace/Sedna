@@ -58,5 +58,6 @@ class LearningRoleSummary(BaseModel):
     products: list[str]
     mod_count: int
     tier_count: int
+    is_published: bool = True
 
     model_config = {"from_attributes": True}

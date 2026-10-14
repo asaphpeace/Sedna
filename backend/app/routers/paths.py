@@ -14,10 +14,12 @@ router = APIRouter(prefix="/paths", tags=["paths"])
 public_router = APIRouter(prefix="/public", tags=["public"])
 
 
-def _summaries(roles, audience: str | None = None) -> list[LearningRoleSummary]:
+def _summaries(roles, audience: str | None = None, include_drafts: bool = False) -> list[LearningRoleSummary]:
     out = []
     for r in roles:
         if audience and r.audience != audience:
+            continue
+        if not r.is_published and not include_drafts:
             continue
         # Placeholder modules (title/structure only, no real content yet)
         # don't count as browsable content. A course where every module is
@@ -32,6 +34,7 @@ def _summaries(roles, audience: str | None = None) -> list[LearningRoleSummary]:
                 id=r.id, name=r.name, description=r.description,
                 icon=r.icon, color=r.color, audience=r.audience,
                 products=r.products, mod_count=real_mod_count, tier_count=len(r.tiers),
+                is_published=r.is_published,
             )
         )
     return out
@@ -59,7 +62,7 @@ async def list_paths(
     user: User = Depends(current_user),
 ):
     v = await viewer(db, user)
-    return _summaries(await _load_roles(db), audience=None if v.staff else "customer")
+    return _summaries(await _load_roles(db), audience=None if v.staff else "customer", include_drafts=v.sees_drafts)
 
 
 @router.get("/{role_id}", response_model=LearningRoleOut)

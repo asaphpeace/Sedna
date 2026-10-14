@@ -39,6 +39,8 @@ async def browse_modules(
     if not v.staff:
         q = q.where(LearningRole.audience == "customer")
     if not v.sees_drafts:
+        q = q.where(LearningRole.is_published == True)
+    if not v.sees_drafts:
         # Placeholder outlines have no content yet: hidden from learners,
         # still listed for the Sedna admins who author them
         q = q.where(Module.is_placeholder == False)

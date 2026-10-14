@@ -29,6 +29,7 @@ export const adminApi = {
   listPaths: () => client.get('/admin/paths'),
   createPath: (body: any) => client.post('/admin/paths', body),
   updatePath: (id: number, body: any) => client.patch(`/admin/paths/${id}`, body),
+  publishPath: (id: number, published: boolean) => client.post(`/admin/paths/${id}/publish`, { published }),
   deletePath: (id: number) => client.delete(`/admin/paths/${id}`),
   // tiers
   listTiers: (pathId: number) => client.get(`/admin/paths/${pathId}/tiers`),
