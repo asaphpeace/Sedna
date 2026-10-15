@@ -83,6 +83,17 @@ async def send_invite_email(to: str, name: str, inviter_name: str, invite_token:
     """)
 
 
+async def send_password_reset_email(to: str, name: str, reset_token: str):
+    reset_url = f"{getattr(settings, 'app_url', 'http://localhost:5173')}/reset-password?token={reset_token}"
+    await send_email(to, "Reset your Sedna Learning Hub password", f"""
+    <h2>Reset your password</h2>
+    <p>Hi {name.split()[0]},</p>
+    <p>Someone asked to reset the password for your Sedna Learning Hub account.</p>
+    <p><a href="{reset_url}">Choose a new password →</a></p>
+    <p>This link expires in 1 hour and works once. If you didn't ask for this, you can ignore this email; your password stays the same.</p>
+    """)
+
+
 async def send_streak_reminder(to: str, name: str, streak_days: int):
     await send_email(to, f"Don't lose your {streak_days}-day streak!", f"""
     <h2>Keep your streak alive, {name.split()[0]}! 🔥</h2>

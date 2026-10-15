@@ -11,6 +11,10 @@ export const authApi = {
     client.post<{ access_token: string }>('/auth/accept-invite', { token, password }),
   changePassword: (current_password: string, new_password: string) =>
     client.post('/auth/change-password', { current_password, new_password }),
+  forgotPassword: (email: string) => client.post('/auth/forgot-password', { email }),
+  checkReset: (token: string) => client.get(`/auth/reset-password/${encodeURIComponent(token)}`),
+  resetPassword: (token: string, password: string) =>
+    client.post<{ access_token: string }>('/auth/reset-password', { token, password }),
 }
 
 // ── Public (no sign-in) ───────────────────────────────
