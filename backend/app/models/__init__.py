@@ -1,5 +1,5 @@
 from app.models.user import Organisation, User
-from app.models.content import LearningRole, Tier, Module
+from app.models.content import Article, LearningRole, Tier, Module
 from app.models.progress import UserModuleProgress, Certificate, SavedModule, ActivityLog, LearningTime, SupportTicket
 from app.models.release import Release
 from app.models.settings import NotificationSettings
@@ -13,7 +13,7 @@ from app.models.assignment import Assignment
 
 __all__ = [
     "Organisation", "User",
-    "LearningRole", "Tier", "Module",
+    "Article", "LearningRole", "Tier", "Module",
     "UserModuleProgress", "Certificate", "SavedModule", "ActivityLog", "LearningTime", "SupportTicket",
     "Release", "NotificationSettings",
     "QuizQuestion", "QuizOption", "QuizAttempt", "QuizAttemptAnswer",

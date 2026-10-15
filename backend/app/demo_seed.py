@@ -33,7 +33,7 @@ DEMO_PASSWORD = "demo-password"
 DAYS_OF_HISTORY = 185  # six months, so 'last quarter' has a full quarter before it
 
 # Content tables copied as-is from the real database, parents first
-CONTENT_TABLES = ["learning_roles", "tiers", "modules", "quiz_questions", "quiz_options", "releases", "badges"]
+CONTENT_TABLES = ["learning_roles", "tiers", "modules", "quiz_questions", "quiz_options", "releases", "badges", "articles"]
 
 # In the demo, customers can take these paths. In the real catalogue they are
 # staff-only for now; making customer versions is Becki and Nassia's decision.

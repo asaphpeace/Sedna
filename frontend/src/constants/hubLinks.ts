@@ -16,4 +16,6 @@ export const SUPPORT = {
   levelOne: `${HC}/sections/31990104900247--Level-One-Start-Smart`,
   levelTwo: `${HC}/sections/31990059177623--Level-Two-Power-Up-Your-Inbox`,
   levelThree: `${HC}/sections/32633624549399--Level-Three-Collaborate-Command`,
+  // VMS support cases are raised in the Jira service desk portal
+  vmsPortal: 'https://dataloy-cloud.atlassian.net/servicedesk/customer/portal/5',
 }
