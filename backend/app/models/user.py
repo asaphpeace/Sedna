@@ -15,6 +15,8 @@ class Organisation(Base):
     slug: Mapped[str] = mapped_column(String(100), unique=True)
     # "sedna" for Sedna's own staff organisation, "customer" for client companies
     kind: Mapped[str] = mapped_column(String(20), default="customer", server_default="customer")
+    # The company's name in Jira's "Customer" field, when it differs from ours
+    jira_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     users: Mapped[list["User"]] = relationship(back_populates="organisation")
@@ -35,6 +37,9 @@ class User(Base):
     password_hash: Mapped[Optional[str]] = mapped_column(String(255))
     invite_token: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
     invite_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    # Forgot-password link: only a SHA-256 of the emailed token is stored
+    reset_token_hash: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    reset_token_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     is_admin: Mapped[bool] = mapped_column(default=False)
     xp_total: Mapped[int] = mapped_column(default=0)
     onboarding_complete: Mapped[bool] = mapped_column(default=False)

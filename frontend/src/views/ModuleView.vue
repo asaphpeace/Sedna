@@ -24,13 +24,9 @@ const hasQuiz = ref(false)
 const activeTab = ref<'overview' | 'transcript' | 'resources' | 'notes'>('overview')
 const showListen = ref(false)
 
-// Text/article modules drop the Transcript tab — there's nothing to
-// transcribe when the content already is text.
-const tabs = computed(() =>
-  module.value?.module_type === 'a'
-    ? (['overview', 'resources', 'notes'] as const)
-    : (['overview', 'transcript', 'resources', 'notes'] as const)
-)
+// Text lessons get their own reading layout (no tabs, player or chapters)
+const isText = computed(() => module.value?.module_type === 'a')
+const tabs = ['overview', 'transcript', 'resources', 'notes'] as const
 
 // Opened from the admin Content panel's "Preview" button — renders the
 // module exactly as a learner would see it, but must not mutate the
@@ -387,8 +383,118 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
         <i class="ti ti-eye" /> Previewing as admin — this won't affect your own progress or history.
       </div>
 
+      <!-- Text lessons: a reading page — one centred column, no player chrome -->
+      <template v-if="isText">
+        <div class="read-progress" aria-hidden="true"><div class="read-progress-fill" :style="{ width: readingPct + '%' }" /></div>
+        <div class="read-layout">
+          <article class="read-main">
+            <nav v-if="module.path_name" aria-label="Breadcrumb" class="read-crumb">
+              <RouterLink :to="`/paths/${module.role_id}`">{{ module.path_name }}</RouterLink>
+              <template v-if="module.tier_label && module.tier_label !== module.path_name">
+                <i class="ti ti-chevron-right" aria-hidden="true" /><span>{{ module.tier_label }}</span>
+              </template>
+            </nav>
+            <h1 class="read-title">{{ module.title }}</h1>
+            <div class="read-meta">
+              <span class="pill" :style="{ background: TYPE_PILL_BG.a, color: TYPE_PILL_FG.a }"><i class="ti ti-file-text" /> Article</span>
+              <span class="mod-dur"><i class="ti ti-clock" /> {{ module.duration_mins }} min read</span>
+              <span v-if="isDone && !isPreview" class="done-inline"><i class="ti ti-circle-check-filled" /> Completed</span>
+              <span class="read-meta-actions">
+                <button v-if="module.audio_url" type="button" class="listen-toggle" @click="showListen = !showListen">
+                  <i class="ti ti-headphones" /> {{ showListen ? 'Hide player' : 'Listen' }}
+                </button>
+                <button v-if="!isPreview" class="btn btn-ghost save-btn" @click="toggleSave">
+                  <i :class="['ti', savedIds.has(Number(route.params.id)) ? 'ti-bookmark-filled' : 'ti-bookmark']" />
+                  {{ savedIds.has(Number(route.params.id)) ? 'Saved' : 'Save' }}
+                </button>
+              </span>
+            </div>
+            <audio v-if="module.audio_url && showListen" class="article-audio" :src="module.audio_url" controls />
+
+            <section v-if="module.learn_items?.length" class="learn-box" aria-labelledby="learn-h">
+              <h2 id="learn-h" class="learn-box-h">What you'll learn</h2>
+              <ul>
+                <li v-for="item in module.learn_items" :key="item"><i class="ti ti-check" aria-hidden="true" /> {{ item }}</li>
+              </ul>
+            </section>
+
+            <div v-if="articleHtml" ref="articleBodyEl" class="article-body read-body" v-html="articleHtml" />
+            <p v-else-if="module.description" class="read-lead">{{ module.description }}</p>
+            <p v-else class="read-lead">This lesson is still being written.</p>
+
+            <footer class="read-end">
+              <div v-if="hasQuiz" class="quiz-cta">
+                <div class="quiz-cta-left">
+                  <i class="ti ti-help-circle" />
+                  <div>
+                    <div class="quiz-cta-title">Test your knowledge</div>
+                    <div class="quiz-cta-sub">Take the quiz to check what you've read and move towards your certificate</div>
+                  </div>
+                </div>
+                <RouterLink :to="`/quiz?module_id=${module.id}`" class="btn btn-ghost">Start quiz</RouterLink>
+              </div>
+
+              <div v-if="!isPreview" class="finish-card">
+                <template v-if="!isDone">
+                  <div>
+                    <div class="finish-title">Finished reading?</div>
+                    <div class="finish-sub">Mark the lesson complete to count it towards your path.</div>
+                  </div>
+                  <button class="btn btn-primary" :disabled="completing" @click="markDone">
+                    <i :class="['ti', completing ? 'ti-loader-2 spin' : 'ti-circle-check']" />
+                    {{ completing ? 'Marking complete…' : 'Mark complete' }}
+                  </button>
+                </template>
+                <template v-else>
+                  <div>
+                    <div class="finish-title done-title"><i class="ti ti-circle-check-filled" /> Lesson complete</div>
+                    <div class="finish-sub">{{ nextModule ? `Up next: ${nextModule.title}` : 'That was the last lesson in this tier.' }}</div>
+                  </div>
+                  <button v-if="nextModule" class="btn btn-primary" @click="goToNextModule">Next lesson <i class="ti ti-arrow-right" /></button>
+                  <RouterLink v-else-if="module.role_id" :to="`/paths/${module.role_id}`" class="btn btn-primary">Back to the path</RouterLink>
+                </template>
+              </div>
+            </footer>
+
+            <ModuleComments v-if="auth.user?.is_sedna_staff" :module-id="module.id" />
+          </article>
+
+          <aside class="read-rail">
+            <nav v-if="toc.length" class="rail-card" aria-label="On this page">
+              <div class="rail-card-head"><span class="rail-card-title">On this page</span></div>
+              <div class="toc-list">
+                <button
+                  v-for="h in toc" :key="h.id" type="button" class="toc-item"
+                  :class="{ 'toc-h3': h.level === 3, active: activeHeadingId === h.id }"
+                  @click="scrollToHeading(h.id)"
+                >{{ h.text }}</button>
+              </div>
+            </nav>
+            <div v-if="tierModules.length > 1" class="rail-card">
+              <div class="rail-card-head"><span class="rail-card-title">In this tier</span></div>
+              <div class="tier-list">
+                <RouterLink
+                  v-for="(m, i) in tierModules" :key="m.id" :to="`/modules/${m.id}`"
+                  class="tier-item" :class="{ current: m.id === module.id }"
+                  :aria-current="m.id === module.id ? 'page' : undefined"
+                >
+                  <div class="tier-icon" :class="moduleDoneState(m) ? 'done' : m.id === module.id ? 'active' : 'default'">
+                    <i v-if="moduleDoneState(m)" class="ti ti-check" />
+                    <span v-else style="font-size:11px;font-weight:500">{{ i + 1 }}</span>
+                  </div>
+                  <div class="tier-item-body">
+                    <div class="tier-item-title" :class="{ 'text-purple': m.id === module.id }">{{ m.title }}</div>
+                    <div class="tier-item-meta"><i :class="['ti', moduleIcon(m.module_type)]" /> {{ m.duration_mins }} min</div>
+                  </div>
+                </RouterLink>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </template>
+
       <!-- Two-column layout -->
-      <div class="mod-layout">
+      <div v-else class="mod-layout">
 
         <!-- LEFT: main content -->
         <div class="mod-main">
@@ -483,22 +589,6 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             </div>
           </div>
 
-          <!-- Article header (reading-focused chrome, no video console) -->
-          <div v-else class="article-header">
-            <div class="article-eyebrow-row">
-              <div class="article-eyebrow">
-                {{ productLabel(module.product).toUpperCase() }} · ARTICLE · {{ module.duration_mins }} min read
-              </div>
-              <button v-if="module.audio_url" type="button" class="listen-toggle" @click="showListen = !showListen">
-                <i class="ti ti-headphones" /> {{ showListen ? 'Hide player' : 'Listen' }}
-              </button>
-            </div>
-            <div class="article-progress-track">
-              <div class="article-progress-fill" :style="{ width: readingPct + '%' }" />
-            </div>
-            <audio v-if="module.audio_url && showListen" class="article-audio" :src="module.audio_url" controls />
-          </div>
-
           <!-- Title + actions -->
           <div class="mod-header">
             <div class="mod-title-row">
@@ -534,8 +624,10 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
               </span>
               <span class="meta-sep">·</span>
               <span class="mod-dur"><i class="ti ti-clock" /> {{ module.duration_mins }} min</span>
-              <span class="meta-sep">·</span>
-              <span class="mod-tier-label">Tier {{ tierModules.length ? '1' : '—' }} · Onboarded</span>
+              <template v-if="module.tier_label">
+                <span class="meta-sep">·</span>
+                <span class="mod-tier-label">{{ module.tier_label }}</span>
+              </template>
             </div>
           </div>
 
@@ -557,13 +649,6 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
             <div v-if="module.description" class="mod-desc">
               <p>{{ module.description }}</p>
             </div>
-
-            <div
-              v-if="module.module_type === 'a' && articleHtml"
-              ref="articleBodyEl"
-              class="article-body"
-              v-html="articleHtml"
-            />
 
             <div v-if="module.learn_items?.length" class="learn-section">
               <h2 class="section-h">What you'll learn</h2>
@@ -829,13 +914,6 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
 .vc-speed { font-size: 13px; font-weight: 500; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 .vc-time { font-size: 13px; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; margin-left: 6px; }
 
-/* ── Article header (replaces video console for text modules) ──────────── */
-.article-header { padding: 20px 28px 0; }
-.article-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.article-eyebrow {
-  font-size: 13px; font-weight: 500; letter-spacing: 0.6px;
-  color: var(--purple);
-}
 .listen-toggle {
   display: flex; align-items: center; gap: 5px;
   font-size: 13px; font-weight: 500; color: var(--purple);
@@ -843,15 +921,52 @@ const circleOffset = computed(() => CIRCLE_C - (pathPct.value / 100) * CIRCLE_C)
   padding: 4px 11px; cursor: pointer; flex-shrink: 0;
 }
 .listen-toggle:hover { background: var(--purple-bg); }
-.article-progress-track {
-  height: 3px; border-radius: 100px; background: var(--border);
-  margin-top: 10px; overflow: hidden;
-}
-.article-progress-fill {
-  height: 100%; background: var(--purple);
-  transition: width 0.1s linear;
-}
 .article-audio { width: 100%; margin-top: 12px; }
+
+/* ── Text lessons: reading layout ─────────────────────────
+   One centred column sized for reading, with a slim rail beside it. */
+.read-progress { position: sticky; top: 0; z-index: 5; height: 3px; background: transparent; }
+.read-progress-fill { height: 100%; background: var(--purple); transition: width 0.1s linear; }
+.read-layout {
+  display: grid; grid-template-columns: minmax(0, 720px) 260px; gap: 56px;
+  justify-content: center; padding: 28px 28px 72px;
+}
+.read-main { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.read-crumb { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
+.read-crumb a { color: var(--text-secondary); }
+.read-crumb a:hover { color: var(--purple); }
+.read-crumb i { font-size: 13px; color: var(--border-mid); }
+.read-title { font-size: 32px; line-height: 1.15; font-weight: 500; letter-spacing: -0.012em; margin: -8px 0 0; }
+.read-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--text-muted); padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.read-meta-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.done-inline { display: flex; align-items: center; gap: 4px; color: var(--green); font-weight: 500; }
+.learn-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+.learn-box-h { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+.learn-box ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.learn-box li { display: flex; gap: 8px; align-items: flex-start; font-size: 15px; line-height: 1.5; color: var(--text-secondary); }
+.learn-box li i { color: var(--purple); margin-top: 3px; flex-shrink: 0; }
+.read-body { font-size: 16.5px; line-height: 1.75; max-width: none; }
+.read-body :deep(h2) { font-size: 22px; margin-top: 36px; scroll-margin-top: 16px; }
+.read-body :deep(h3) { font-size: 18px; margin-top: 28px; scroll-margin-top: 16px; }
+.read-body :deep(p), .read-body :deep(ul), .read-body :deep(ol) { margin-bottom: 18px; }
+.read-lead { font-size: 17px; line-height: 1.7; color: var(--text-secondary); margin: 0; }
+.read-end { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; padding-top: 28px; border-top: 1px solid var(--border); }
+.finish-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+}
+.finish-title { font-size: 16px; font-weight: 500; }
+.done-title { display: flex; align-items: center; gap: 6px; color: var(--green); }
+.finish-sub { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+.spin { animation: spin 0.8s linear infinite; }
+.read-rail { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 48px); overflow-y: auto; }
+.read-rail .tier-item { text-decoration: none; }
+@media (max-width: 960px) {
+  .read-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 20px 16px 56px; }
+  .read-rail { position: static; max-height: none; }
+  .read-title { font-size: 26px; }
+  .read-meta-actions { margin-left: 0; }
+}
 
 /* ── Article body ──────────────────────────────────────────
    Content is injected via v-html (rendered Markdown), so scoped styles

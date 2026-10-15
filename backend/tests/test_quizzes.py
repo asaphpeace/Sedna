@@ -74,3 +74,22 @@ async def test_second_pass_does_not_double_award_xp(client, user, quiz_for_modul
 
     second = await client.post("/quizzes/attempt", headers=headers, json=body)
     assert second.json()["xp_awarded"] == 0
+
+
+async def test_passing_a_multi_question_quiz_twice(client, user, quiz_for_module, db_session):
+    # Regression: the "passed before?" check joined the question table, so a
+    # quiz with 2+ questions crashed on every pass
+    m1, q1, correct, wrong = quiz_for_module
+    q2 = QuizQuestion(module_id=m1.id, question_text="3 + 3?", sort_order=2)
+    db_session.add(q2)
+    await db_session.flush()
+    right2 = QuizOption(question_id=q2.id, text="6", is_correct=True, sort_order=1)
+    db_session.add(right2)
+    await db_session.commit()
+    answers = [{"question_id": q1.id, "option_id": correct.id}, {"question_id": q2.id, "option_id": right2.id}]
+    headers = auth_headers(user)
+
+    first = await client.post("/quizzes/attempt", headers=headers, json={"module_id": m1.id, "answers": answers})
+    assert first.status_code == 200 and first.json()["passed"] is True and first.json()["xp_awarded"] == 20
+    again = await client.post("/quizzes/attempt", headers=headers, json={"module_id": m1.id, "answers": answers})
+    assert again.status_code == 200 and again.json()["xp_awarded"] == 0

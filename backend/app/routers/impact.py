@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.content import LearningRole, Module, Tier
-from app.models.progress import Certificate, LearningTime, UserModuleProgress
+from app.models.progress import Certificate, LearningTime, SupportTicket, UserModuleProgress
 from app.models.user import Organisation, User
 from app.services.deps import sedna_admin_user
 
@@ -29,6 +29,11 @@ PERIOD_LABELS = {
     "12m": "Last 12 months",
 }
 IDLE_DAYS = 14
+# A customer learner counts as trained from the moment they finish this many lessons
+TRAINED_AFTER_LESSONS = 3
+# Below this many user-months on either side, the comparison is flagged as too early to read
+MIN_USER_MONTHS = 6
+DAYS_PER_MONTH = 30.44
 
 
 def _period_bounds(period: str, now: datetime) -> tuple[datetime, datetime]:
@@ -249,6 +254,13 @@ async def learning_impact(
             })
     idle.sort(key=lambda r: -r["days_idle"])
 
+    support = await _support_impact(
+        db, start, end, audience,
+        [o for o in scoped_orgs if o.kind == "customer"],
+        [u for u in users if org_by_id[u.org_id].kind == "customer"],
+        done,
+    )
+
     return {
         "period": {
             "key": period, "label": PERIOD_LABELS[period],
@@ -264,5 +276,113 @@ async def learning_impact(
             "idle_learners": idle[:25],
             "idle_days": IDLE_DAYS,
         },
+        "support": support,
         "filters": {"companies": [{"id": o.id, "name": o.name, "kind": o.kind} for o in orgs]},
+    }
+
+
+def _rate(tickets: int, days: float) -> Optional[float]:
+    return round(tickets / (days / DAYS_PER_MONTH), 2) if days > 0 else None
+
+
+async def _support_impact(db, start, end, audience, customer_orgs, customers, done) -> dict:
+    """Trained vs untrained support load for customers, from Jira cases.
+
+    Each customer learner's time in the period is split at the moment they
+    finished their third lesson: before is untrained time, after is trained
+    time. Cases they raised are counted on the matching side, and both sides
+    become cases per user per month. Only companies with learners on both
+    sides are compared, so the comparison is within companies rather than
+    between easier and harder customers. It shows an association, not proof.
+    """
+    base = {"trained_after_lessons": TRAINED_AFTER_LESSONS, "has_tickets": False}
+    if audience == "staff" or not customer_orgs:
+        return base
+    org_ids = [o.id for o in customer_orgs]
+    tickets = (await db.execute(
+        select(SupportTicket).where(SupportTicket.org_id.in_(org_ids))
+    )).scalars().all()
+    if not tickets:
+        return base
+    in_window = [t for t in tickets if _in(t.created_at, start, end)]
+
+    finished: dict[int, list[datetime]] = defaultdict(list)
+    for p in done:
+        finished[p.user_id].append(p.completed_at)
+    trained_from = {
+        uid: sorted(ts)[TRAINED_AFTER_LESSONS - 1]
+        for uid, ts in finished.items() if len(ts) >= TRAINED_AFTER_LESSONS
+    }
+
+    # Exposure: days each learner spent untrained and trained within the period
+    exposure: dict[int, tuple[float, float]] = {}
+    for u in customers:
+        u_start = max(start, u.created_at or start)
+        if u_start >= end:
+            continue
+        cut = trained_from.get(u.id)
+        if cut is None or cut >= end:
+            untrained, trained = (end - u_start).days, 0.0
+        elif cut <= u_start:
+            untrained, trained = 0.0, (end - u_start).days
+        else:
+            untrained, trained = (cut - u_start).days, (end - cut).days
+        exposure[u.id] = (untrained, trained)
+    org_of = {u.id: u.org_id for u in customers}
+
+    per_org = defaultdict(lambda: {"u_days": 0.0, "t_days": 0.0, "u_tickets": 0, "t_tickets": 0})
+    for uid, (ud, td) in exposure.items():
+        per_org[org_of[uid]]["u_days"] += ud
+        per_org[org_of[uid]]["t_days"] += td
+    for t in in_window:
+        if t.user_id in exposure:
+            cut = trained_from.get(t.user_id)
+            side = "t_tickets" if cut is not None and t.created_at >= cut else "u_tickets"
+            per_org[org_of[t.user_id]][side] += 1
+
+    compared = [oid for oid, v in per_org.items() if v["u_days"] > 0 and v["t_days"] > 0]
+    sums = {k: sum(per_org[o][k] for o in compared) for k in ("u_days", "t_days", "u_tickets", "t_tickets")}
+    trained_rate, untrained_rate = _rate(sums["t_tickets"], sums["t_days"]), _rate(sums["u_tickets"], sums["u_days"])
+    difference = (
+        round((trained_rate - untrained_rate) / untrained_rate * 100)
+        if trained_rate is not None and untrained_rate else None
+    )
+
+    name_of = {o.id: o.name for o in customer_orgs}
+    members = defaultdict(set)
+    for u in customers:
+        members[u.org_id].add(u.id)
+    companies = []
+    for oid in org_ids:
+        org_tickets = [t for t in in_window if t.org_id == oid]
+        if not org_tickets and oid not in per_org:
+            continue
+        v = per_org.get(oid, {"u_days": 0, "t_days": 0, "u_tickets": 0, "t_tickets": 0})
+        trained_people = sum(1 for uid in members[oid] if uid in trained_from and trained_from[uid] < end)
+        companies.append({
+            "org_id": oid,
+            "name": name_of[oid],
+            "tickets": len(org_tickets),
+            "matched_to_person": sum(1 for t in org_tickets if t.user_id),
+            "trained_share": round(trained_people / len(members[oid]) * 100) if members[oid] else 0,
+            "trained_rate": _rate(v["t_tickets"], v["t_days"]),
+            "untrained_rate": _rate(v["u_tickets"], v["u_days"]),
+            "compared": oid in compared,
+        })
+    companies.sort(key=lambda c: -c["tickets"])
+
+    topics = Counter(t.topic for t in in_window)
+    return {
+        **base,
+        "has_tickets": True,
+        "last_synced_case": max(t.created_at for t in tickets).date().isoformat(),
+        "tickets": len(in_window),
+        "matched_to_person": sum(1 for t in in_window if t.user_id),
+        "companies_compared": len(compared),
+        "trained": {"tickets": sums["t_tickets"], "user_months": round(sums["t_days"] / DAYS_PER_MONTH, 1), "rate": trained_rate},
+        "untrained": {"tickets": sums["u_tickets"], "user_months": round(sums["u_days"] / DAYS_PER_MONTH, 1), "rate": untrained_rate},
+        "difference_pct": difference,
+        "too_early": min(sums["t_days"], sums["u_days"]) / DAYS_PER_MONTH < MIN_USER_MONTHS,
+        "companies": companies,
+        "topics": [{"topic": k, "tickets": n} for k, n in topics.most_common(8)],
     }

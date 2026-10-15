@@ -65,6 +65,11 @@ async def get_module(
 ):
     await require_module_visible(db, user, module_id)
     result = await db.execute(
-        select(Module).where(Module.id == module_id).options(selectinload(Module.tier))
+        select(Module).where(Module.id == module_id)
+        .options(selectinload(Module.tier).selectinload(Tier.role))
     )
-    return _with_role_id(result.scalar_one())
+    mod = _with_role_id(result.scalar_one())
+    # For the lesson page's breadcrumb (path › tier)
+    mod.path_name = mod.tier.role.name  # type: ignore[attr-defined]
+    mod.tier_label = mod.tier.label  # type: ignore[attr-defined]
+    return mod

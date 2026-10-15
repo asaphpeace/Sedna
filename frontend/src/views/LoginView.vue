@@ -26,6 +26,11 @@ async function submit() {
     loading.value = false
   }
 }
+
+// Carry the typed email over without putting it in the URL
+function forgot() {
+  router.push({ path: '/forgot-password', state: { email: email.value.trim() } })
+}
 </script>
 
 <template>
@@ -56,7 +61,10 @@ async function submit() {
           />
         </div>
         <div class="field">
-          <label for="login-password" class="label">Password</label>
+          <div class="label-row">
+            <label for="login-password" class="label">Password</label>
+            <RouterLink to="/forgot-password" class="forgot-link" @click.prevent="forgot">Forgot password?</RouterLink>
+          </div>
           <input
             id="login-password"
             v-model="password"
@@ -97,6 +105,9 @@ async function submit() {
 .login-form { display: flex; flex-direction: column; gap: 18px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .label { font-size: 14px; color: var(--text-secondary); }
+.label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.forgot-link { font-size: 14px; color: var(--purple); }
+.forgot-link:hover { text-decoration: underline; }
 .error-msg { font-size: 14px; color: var(--coral); background: var(--coral-bg); padding: 10px 14px; border-radius: var(--radius-sm); }
 .login-btn { width: 100%; margin-top: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }

@@ -91,6 +91,10 @@ const exportCompanies = () => download('learning-impact-companies',
 const exportPaths = () => download('learning-impact-paths',
   ['Path', 'Audience', 'Lessons', 'Started', 'Finished', 'Completion %', 'Median days to finish', 'Minutes learning', 'Drop-off lesson', 'Learners stopped there'],
   data.value.paths.map((p: any) => [p.name, p.audience, p.lessons, p.started, p.finished, p.completion_rate, p.median_days, p.tracked_minutes, p.dropoff?.title ?? '', p.dropoff?.learners ?? '']))
+const exportSupport = () => download('learning-impact-support-cases',
+  ['Company', 'Cases', 'Cases matched to a person', 'Learners trained %', 'Cases per learner-month before training', 'Cases per learner-month after training', 'In comparison'],
+  data.value.support.companies.map((c: any) => [c.name, c.tickets, c.matched_to_person, c.trained_share, c.untrained_rate, c.trained_rate, c.compared ? 'yes' : 'no']))
+const fmtRate = (r: number | null) => r == null ? '—' : r.toFixed(2)
 const exportIdle = () => download('learning-impact-idle-learners',
   ['Learner', 'Company', 'Unfinished paths', 'Days idle'],
   data.value.attention.idle_learners.map((l: any) => [l.name, l.company, l.paths.join('; '), l.days_idle]))
@@ -206,6 +210,82 @@ const exportIdle = () => download('learning-impact-idle-learners',
         </div>
       </section>
 
+      <!-- ── Customer impact ───────────────────── -->
+      <section class="section" :class="{ dim: loading }" aria-labelledby="impact-h">
+        <h2 id="impact-h" class="section-h">Customer impact</h2>
+        <div v-if="!data.support.has_tickets" class="card">
+          <p v-if="audience === 'staff'" class="att-line">Customer impact compares customers' support cases, so it doesn't apply to Sedna staff.</p>
+          <template v-else>
+            <p class="att-line">No support cases have been synced from Jira for these companies yet.</p>
+            <p class="muted">Once Jira is connected, each customer's VMS support cases are compared before and after their learners are trained.</p>
+          </template>
+        </div>
+        <template v-else>
+          <div class="cards">
+            <div class="card stat">
+              <div class="stat-value">{{ fmtRate(data.support.untrained.rate) }}</div>
+              <div class="stat-label">Cases per learner per month, before training</div>
+              <div class="stat-note">{{ data.support.untrained.tickets }} cases over {{ data.support.untrained.user_months }} learner-months</div>
+            </div>
+            <div class="card stat">
+              <div class="stat-value">{{ fmtRate(data.support.trained.rate) }}</div>
+              <div class="stat-label">Cases per learner per month, after training</div>
+              <div class="stat-note">{{ data.support.trained.tickets }} cases over {{ data.support.trained.user_months }} learner-months</div>
+            </div>
+            <div class="card stat">
+              <div class="stat-value">{{ data.support.difference_pct == null ? '—' : (data.support.difference_pct > 0 ? '+' : data.support.difference_pct < 0 ? '−' : '') + Math.abs(data.support.difference_pct) + '%' }}</div>
+              <div class="stat-label">Difference after training</div>
+              <div class="stat-change" :class="data.support.difference_pct == null ? 'flat' : data.support.difference_pct < 0 ? 'up' : 'down'">
+                {{ data.support.difference_pct == null ? 'Not enough data yet' : data.support.difference_pct < 0 ? 'Fewer cases after training' : 'More cases after training' }}
+              </div>
+            </div>
+          </div>
+          <p v-if="data.support.too_early" class="notice-line">Early days: there's less than six learner-months on one side, so treat this as a first signal.</p>
+          <p class="method">
+            Trained means a learner has finished {{ data.support.trained_after_lessons }} lessons; each person's time is split at that point, and only
+            companies with learners on both sides are compared ({{ data.support.companies_compared }} here). {{ data.support.tickets }} cases in this period,
+            {{ data.support.matched_to_person }} matched to a learner by email; the rest count for their company only. This shows an association, not proof.
+          </p>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-h">By company</h3>
+              <button class="btn btn-ghost btn-sm" @click="exportSupport"><i class="ti ti-download" /> Export CSV</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Company</th><th class="num">Cases</th><th class="num">Matched to a learner</th><th class="num">Learners trained</th><th class="num">Before training</th><th class="num">After training</th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="c in data.support.companies" :key="c.org_id">
+                    <td>{{ c.name }} <span v-if="!c.compared" class="muted">· not compared</span></td>
+                    <td class="num">{{ c.tickets }}</td>
+                    <td class="num">{{ c.matched_to_person }}</td>
+                    <td class="num">{{ c.trained_share }}%</td>
+                    <td class="num">{{ fmtRate(c.untrained_rate) }}</td>
+                    <td class="num">{{ fmtRate(c.trained_rate) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="muted small">Cases per learner per month.</p>
+          </div>
+
+          <div class="card">
+            <h3 class="card-h">What customers raise most</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Topic</th><th class="num">Cases</th></tr></thead>
+                <tbody>
+                  <tr v-for="t in data.support.topics" :key="t.topic"><td>{{ t.topic }}</td><td class="num">{{ t.tickets }}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+      </section>
+
       <!-- ── Health ────────────────────────────── -->
       <section class="section" :class="{ dim: loading }" aria-labelledby="health-h">
         <h2 id="health-h" class="section-h">Health</h2>
@@ -272,7 +352,7 @@ const exportIdle = () => download('learning-impact-idle-learners',
       </section>
 
       <p class="method">
-        A lesson counts when it's marked complete; placeholder outlines never count. Time spent counts only while a lesson
+        A lesson counts when it's marked complete; placeholder outlines never count. Support cases come from Jira. Time spent counts only while a lesson
         is open, visible and in use, and has been recorded since 13 Oct 2026. The estimate beside it adds up the length of
         each lesson completed.
       </p>
@@ -332,6 +412,8 @@ td a:hover { color: var(--purple); }
 .tag.internal { background: #F1F2F4; color: #3A3B42; }
 
 .attention { border-color: #FBEDC8; }
+.notice-line { font-size: 14px; color: #633806; background: #FBEDC8; border-radius: 8px; padding: 10px 14px; margin: 0; }
+.small { font-size: 13px; margin: 8px 0 0; }
 .att-line { font-size: 15px; margin-bottom: 8px; }
 .method { font-size: 13px; color: var(--text-secondary); max-width: 720px; line-height: 1.6; }
 
