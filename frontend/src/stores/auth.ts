@@ -39,11 +39,18 @@ export const useAuthStore = defineStore('auth', () => {
     await fetchMe()
   }
 
+  async function resetPassword(resetToken: string, password: string) {
+    const { data } = await authApi.resetPassword(resetToken, password)
+    token.value = data.access_token
+    localStorage.setItem('token', data.access_token)
+    await fetchMe()
+  }
+
   function logout() {
     token.value = null
     user.value = null
     localStorage.removeItem('token')
   }
 
-  return { user, token, login, fetchMe, acceptInvite, logout }
+  return { user, token, login, fetchMe, acceptInvite, resetPassword, logout }
 })

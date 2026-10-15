@@ -11,6 +11,8 @@ const router = createRouter({
     { path: '/learning/email', component: () => import('@/views/hub/HubEmailView.vue'), meta: { public: true } },
     { path: '/learning/vms', component: () => import('@/views/hub/HubVmsView.vue'), meta: { public: true } },
     { path: '/login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
+    { path: '/forgot-password', component: () => import('@/views/ForgotPasswordView.vue'), meta: { public: true } },
+    { path: '/reset-password', component: () => import('@/views/ResetPasswordView.vue'), meta: { public: true } },
     { path: '/accept-invite', component: () => import('@/views/AcceptInviteView.vue'), meta: { public: true } },
     { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFoundView.vue'), meta: { public: true } },
     {
