@@ -90,3 +90,22 @@ class LearningTime(Base):
     module_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), index=True)
     day: Mapped[date] = mapped_column(Date)
     seconds: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class SupportTicket(Base):
+    """A customer support case synced from Jira, kept to what the impact
+    measures need: when, which company, who raised it (when Jira exposes the
+    reporter's email) and its topic. No descriptions or comments are stored."""
+
+    __tablename__ = "support_tickets"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    external_ref: Mapped[str] = mapped_column(String(30), unique=True)  # e.g. DSD-31782
+    org_id: Mapped[Optional[int]] = mapped_column(ForeignKey("organisations.id"), nullable=True, index=True)
+    customer_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # as Jira names it
+    reporter_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(500), default="")
+    topic: Mapped[str] = mapped_column(String(80), default="Other")
+    created_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

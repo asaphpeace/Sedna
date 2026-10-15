@@ -57,6 +57,22 @@ LAST = ["Andersen", "Barros", "Costa", "Dahl", "Evans", "Fischer", "Georgiou", "
         "Walsh", "Xu", "Yilmaz", "Zielinski"]
 COLORS = ["#7A3FE5", "#0B8FB0", "#0E9E6E", "#B26A00", "#B0322B", "#4B1FA8"]
 
+# Fictional support cases for customer learners, so the trained vs untrained
+# comparison has something to show. Untrained people raise cases at roughly
+# twice the rate of trained ones, which is the kind of gap the real measure
+# looks for; it is an assumption for the demo, not a finding.
+CASES_PER_MONTH_UNTRAINED = 0.9
+CASES_PER_MONTH_TRAINED = 0.45
+SHARE_WITH_REPORTER_EMAIL = 0.7
+DEMO_CASE_TITLES = {
+    "Invoicing, costs and accounting": ["Freight still pending after invoicing", "Cannot assemble invoice", "Accruals counted twice"],
+    "Voyages and port calls": ["Voyage start date picked from old voyage", "Wrong distance between ports", "Port call status colours"],
+    "Bunkers": ["Negative ROB after bunkering", "Bunkers on redelivery not in SOA", "Bunker cost wrong in P&L"],
+    "Hire, TC and statements of account": ["Hire invoice shows wrong days", "Statement of account changed lines"],
+    "Laytime and demurrage": ["Agreed demurrage not in receivables", "Reversible laytime question"],
+    "Users, sign-in and access": ["User cannot log in", "Change user permissions"],
+}
+
 
 def _demo_url() -> str:
     url = settings.database_url
@@ -104,6 +120,42 @@ def _lessons_by_path(rows) -> dict[str, list[tuple]]:
     return out
 
 
+_case_no = 0
+
+
+def _support_cases(db, rng, user, joined, completions, start_of_history, now) -> int:
+    """Raise cases at the untrained rate until the person's third finished
+    lesson and at the trained rate after it. Each stretch gets its expected
+    number of cases (rounded at random) scattered across it, rather than a
+    day-by-day coin toss, so a small demo doesn't swing on luck."""
+    global _case_no
+    trained_from = sorted(completions)[2] if len(completions) >= 3 else None
+    begin = max(joined, start_of_history - timedelta(days=60))
+    cut = min(max(trained_from, begin), now) if trained_from else now
+    stretches = [(begin, cut, CASES_PER_MONTH_UNTRAINED), (cut, now, CASES_PER_MONTH_TRAINED)]
+    made = 0
+    for s_from, s_to, rate in stretches:
+        days = (s_to - s_from).total_seconds() / 86400
+        if days <= 0:
+            continue
+        count = int(rate * days / 30.44 + rng.random())
+        # The same even split for which cases carry a reporter email
+        with_email = int(count * SHARE_WITH_REPORTER_EMAIL + rng.random())
+        for n in range(count):
+            topic = rng.choice(list(DEMO_CASE_TITLES))
+            _case_no += 1
+            matched = n < with_email
+            db.add(SupportTicket(
+                external_ref=f"DEMO-{_case_no:05d}", org_id=user.org_id,
+                customer_name=None, reporter_email=user.email if matched else None,
+                user_id=user.id if matched else None,
+                title=rng.choice(DEMO_CASE_TITLES[topic]), topic=topic,
+                created_at=s_from + timedelta(days=rng.uniform(0, days)),
+            ))
+            made += 1
+    return made
+
+
 async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
     rows = (await db.execute(
         select(Module, Tier, LearningRole)
@@ -121,7 +173,7 @@ async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
     start_of_history = now - timedelta(days=DAYS_OF_HISTORY)
     used_names: set[str] = set()
     cred = 10_000_000
-    totals = {"people": 0, "lessons": 0, "certificates": 0}
+    totals = {"people": 0, "lessons": 0, "certificates": 0, "cases": 0}
 
     for company in COMPANIES:
         org = Organisation(name=company["name"], slug=company["slug"], kind=company["kind"])
@@ -159,6 +211,8 @@ async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
 
             # Not everyone takes part: how keen a company is sets its coverage
             if rng.random() > company["keen"]:
+                if not staff:
+                    totals["cases"] += _support_cases(db, rng, user, joined, [], start_of_history, now)
                 continue
 
             pool = [p for p in (STAFF_PATHS if staff else CUSTOMER_PATHS) if p in lessons]
@@ -168,6 +222,7 @@ async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
                 chosen = rng.sample(pool, k=rng.randint(1, len(pool)))
 
             last_seen = None
+            completions: list[datetime] = []
             for path in chosen:
                 # People already here start whenever in the window; new joiners start within two weeks
                 if joined < start_of_history:
@@ -201,6 +256,7 @@ async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
                     db.add(LearningTime(user_id=user.id, module_id=module.id, day=started.date(),
                                         seconds=int(mins * 60 * rng.uniform(0.8, 1.6))))
                     totals["lessons"] += 1
+                    completions.append(finished)
                     last_seen = max(filter(None, [last_seen, finished]))
 
                     # Last lesson of a tier earns its certificate
@@ -215,11 +271,14 @@ async def _generate(db: AsyncSession, rng: random.Random, now: datetime):
 
                     t = finished + timedelta(days=rng.expovariate(1 / pace), hours=rng.uniform(-3, 3))
             user.last_active_at = last_seen
+            if not staff:
+                totals["cases"] += _support_cases(db, rng, user, joined, completions, start_of_history, now)
             await db.flush()
 
     await db.commit()
     print(f"  {totals['people']} fictional learners in {len(COMPANIES)} companies, "
-          f"{totals['lessons']} lessons completed, {totals['certificates']} certificates")
+          f"{totals['lessons']} lessons completed, {totals['certificates']} certificates, "
+          f"{totals['cases']} support cases")
 
 
 async def main():

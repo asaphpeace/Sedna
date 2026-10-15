@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     # Text-to-speech (AWS Polly) — see docs/DEPLOYMENT.md
     aws_region: str = "us-east-1"
     polly_voice_id: str = "Joanna"
+    # Jira (VMS support cases) — optional; the ticket sync is off without a token.
+    # Put these in backend/.env, never in code.
+    jira_base_url: str = ""
+    jira_email: str = ""
+    jira_api_token: str = ""
+    jira_project: str = "DSD"
+    jira_customer_field: str = "customfield_10047"  # "Customer" picklist: {"value": "Name|<option id>"}
 
     @property
     def allowed_origins(self) -> list[str]:

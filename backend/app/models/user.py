@@ -15,6 +15,8 @@ class Organisation(Base):
     slug: Mapped[str] = mapped_column(String(100), unique=True)
     # "sedna" for Sedna's own staff organisation, "customer" for client companies
     kind: Mapped[str] = mapped_column(String(20), default="customer", server_default="customer")
+    # The company's name in Jira's "Customer" field, when it differs from ours
+    jira_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     users: Mapped[list["User"]] = relationship(back_populates="organisation")
