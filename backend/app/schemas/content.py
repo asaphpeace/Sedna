@@ -15,6 +15,8 @@ class ModuleOut(BaseModel):
     learn_items: list[str]
     tier_id: int
     role_id: Optional[int] = None
+    path_name: Optional[str] = None   # set on the single-lesson endpoint only
+    tier_label: Optional[str] = None
     video_url: Optional[str] = None
     rich_content: Optional[str] = None
     transcript: Optional[str] = None
