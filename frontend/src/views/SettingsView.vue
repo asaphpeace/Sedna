@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { settingsApi } from '@/api'
+import { authApi, settingsApi } from '@/api'
 import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
@@ -20,6 +20,32 @@ onMounted(async () => {
   const { data } = await settingsApi.getNotifications()
   settings.value = data
 })
+
+// ── Password ──────────────────────────────────────────
+const pw = ref({ current: '', next: '', confirm: '' })
+const pwBusy = ref(false)
+const pwError = ref('')
+const pwDone = ref(false)
+
+async function changePassword() {
+  pwError.value = ''
+  pwDone.value = false
+  if (pw.value.next.length < 8) { pwError.value = 'Your new password needs at least 8 characters.'; return }
+  if (pw.value.next !== pw.value.confirm) { pwError.value = "The new passwords don't match."; return }
+  pwBusy.value = true
+  try {
+    await authApi.changePassword(pw.value.current, pw.value.next)
+    pw.value = { current: '', next: '', confirm: '' }
+    pwDone.value = true
+  } catch (e: any) {
+    const d = e?.response?.data?.detail
+    pwError.value = typeof d === 'string' ? d
+      : e?.response?.status === 429 ? 'Too many attempts. Wait a minute and try again.'
+      : "Your password couldn't be changed. Try again."
+  } finally {
+    pwBusy.value = false
+  }
+}
 
 async function toggle(key: string) {
   settings.value[key] = !settings.value[key]
@@ -56,6 +82,33 @@ function logout() {
           <div class="profile-role">{{ auth.user?.role ?? 'Member' }}</div>
         </div>
       </div>
+    </section>
+
+    <!-- Password section -->
+    <section class="section" aria-labelledby="pw-h">
+      <h2 id="pw-h" class="section-title">Password</h2>
+      <form class="pw-form" @submit.prevent="changePassword">
+        <input type="email" :value="auth.user?.email" autocomplete="username" hidden readonly />
+        <label class="pw-field">
+          <span>Current password</span>
+          <input v-model="pw.current" type="password" class="input" autocomplete="current-password" required />
+        </label>
+        <label class="pw-field">
+          <span>New password <span class="pw-hint">at least 8 characters</span></span>
+          <input v-model="pw.next" type="password" class="input" autocomplete="new-password" minlength="8" required />
+        </label>
+        <label class="pw-field">
+          <span>Confirm new password</span>
+          <input v-model="pw.confirm" type="password" class="input" autocomplete="new-password" required />
+        </label>
+        <p v-if="pwError" class="pw-error" role="alert">{{ pwError }}</p>
+        <p v-if="pwDone" class="pw-done" role="status">Password changed. Use it next time you sign in.</p>
+        <div>
+          <button type="submit" class="btn btn-primary" :disabled="pwBusy || !pw.current || !pw.next || !pw.confirm">
+            {{ pwBusy ? 'Changing…' : 'Change password' }}
+          </button>
+        </div>
+      </form>
     </section>
 
     <!-- Notifications section -->
@@ -102,6 +155,11 @@ function logout() {
 .toggle--on { background: var(--purple); }
 .toggle-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 .toggle--on .toggle-knob { left: 19px; }
+.pw-form { display: flex; flex-direction: column; gap: 14px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.pw-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--text-secondary); }
+.pw-hint { color: var(--text-muted); font-size: 13px; margin-left: 4px; }
+.pw-error { font-size: 14px; color: #B0322B; margin: 0; }
+.pw-done { font-size: 14px; color: #1F8A5B; margin: 0; }
 .logout-btn { color: #B0322B; border-color: #FBE0DE; }
 .logout-btn:hover { background: #FBE0DE; border-color: #EF9A9A; }
 </style>

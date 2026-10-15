@@ -9,6 +9,8 @@ export const authApi = {
   getInvite: (token: string) => client.get(`/auth/invite/${token}`),
   acceptInvite: (token: string, password: string) =>
     client.post<{ access_token: string }>('/auth/accept-invite', { token, password }),
+  changePassword: (current_password: string, new_password: string) =>
+    client.post('/auth/change-password', { current_password, new_password }),
 }
 
 // ── Public (no sign-in) ───────────────────────────────
