@@ -22,6 +22,7 @@ const result = ref<{
 } | null>(null)
 const loading = ref(true)
 const submitting = ref(false)
+const submitError = ref('')
 const showExplanation = ref(false)
 
 onMounted(async () => {
@@ -59,6 +60,7 @@ function prev() {
 
 async function submit() {
   submitting.value = true
+  submitError.value = ''
   try {
     const answers = Object.entries(selected.value).map(([qid, oid]) => ({
       question_id: Number(qid),
@@ -66,6 +68,9 @@ async function submit() {
     }))
     const res = await quizzesApi.submit({ module_id: moduleId, tier_id: tierId, answers })
     result.value = res.data
+  } catch (err: any) {
+    const d = err?.response?.data?.detail
+    submitError.value = typeof d === 'string' ? d : "Your answers couldn't be submitted. Try again in a moment."
   } finally {
     submitting.value = false
   }
@@ -198,11 +203,13 @@ function getOptionState(qId: number, optId: number) {
           Submit quiz
         </button>
       </div>
+      <p v-if="submitError" class="submit-error" role="alert">{{ submitError }}</p>
     </div>
   </div>
 </template>
 
 <style scoped>
+.submit-error { margin-top: 12px; font-size: 14px; color: var(--coral); background: var(--coral-bg); padding: 10px 14px; border-radius: var(--radius-sm); }
 .quiz-container { max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
 .loading-state, .empty-state { text-align: center; padding: 4rem; color: var(--text-muted); }
 .loading-state i, .empty-state i { font-size: 2rem; display: block; margin-bottom: 1rem; }

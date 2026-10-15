@@ -149,15 +149,18 @@ async def submit_attempt(
     cert = None
 
     if passed:
+        # Earlier passes of this same quiz (by the attempt's own module/tier,
+        # not the question table, which would multiply rows per question)
+        attempt_col = QuizAttempt.module_id if body.module_id else QuizAttempt.tier_id
         prev_result = await db.execute(
-            select(QuizAttempt).where(
+            select(QuizAttempt.id).where(
                 QuizAttempt.user_id == user.id,
-                filter_col == filter_val,
+                attempt_col == filter_val,
                 QuizAttempt.passed == True,
                 QuizAttempt.id != attempt.id,
-            )
+            ).limit(1)
         )
-        is_first_pass = prev_result.scalar_one_or_none() is None
+        is_first_pass = prev_result.first() is None
         if is_first_pass:
             xp_awarded = await award_xp(db, user, "quiz_first_pass", filter_val)
             await update_streak(db, user)
