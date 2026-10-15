@@ -9,7 +9,8 @@ const route = useRoute()
 const router = useRouter()
 const app = useAppStore()
 const role = ref<any>(null)
-const collapsed = ref<Record<number, boolean>>({})
+// Tiers start collapsed so a path reads as a short list; click one to open it
+const open = ref<Record<number, boolean>>({})
 
 onMounted(async () => {
   const { data } = await pathsApi.get(Number(route.params.id))
@@ -61,7 +62,11 @@ const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2B
       <!-- Tiers -->
       <div class="tiers">
         <div v-for="(tier, idx) in role.tiers" :key="tier.id" class="tier">
-          <div class="tier-header" @click="collapsed[idx] = !collapsed[idx]">
+          <div
+            class="tier-header" role="button" tabindex="0" :aria-expanded="!!open[idx]"
+            @click="open[idx] = !open[idx]"
+            @keydown.enter.prevent="open[idx] = !open[idx]" @keydown.space.prevent="open[idx] = !open[idx]"
+          >
             <div class="tier-num">{{ idx + 1 }}</div>
             <div class="tier-info">
               <div class="tier-name">{{ tier.label }} — {{ tier.name }}</div>
@@ -70,10 +75,10 @@ const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2B
             <div class="tier-pill" :style="{ background: tierStateMeta(tier).bg, color: tierStateMeta(tier).fg }">
               {{ tierStateMeta(tier).label }}
             </div>
-            <i class="ti ti-chevron-down tier-chev" :style="{ transform: collapsed[idx] ? 'rotate(-90deg)' : 'rotate(0)' }" />
+            <i class="ti ti-chevron-down tier-chev" :style="{ transform: open[idx] ? 'rotate(0)' : 'rotate(-90deg)' }" />
           </div>
 
-          <div v-if="!collapsed[idx]" class="module-list">
+          <div v-if="open[idx]" class="module-list">
             <RouterLink
               v-for="(m, mi) in tier.modules" :key="m.id"
               :to="`/modules/${m.id}`"
@@ -118,6 +123,7 @@ const typeFg: Record<string, string>   = { v: '#7A3FE5', a: '#633806', l: '#4D2B
 .tier { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .tier-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
 .tier-header:hover { background: var(--purple-subtle); }
+.tier-header:focus-visible { outline: 2px solid var(--purple); outline-offset: -2px; }
 .tier-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; flex-shrink: 0; }
 .tier-info { flex: 1; }
 .tier-name { font-size: 15px; font-weight: 500; }
