@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     # Text-to-speech (AWS Polly) — see docs/DEPLOYMENT.md
     aws_region: str = "us-east-1"
     polly_voice_id: str = "Joanna"
+    # Google sign-in — off while google_client_id is empty. The client ID comes
+    # from an OAuth client (type "Web application") in Google Cloud.
+    google_client_id: str = ""
+    # Google Workspace domains whose people may join without an invite, as
+    # Sedna staff learners. Comma-separated.
+    google_staff_domains: str = "sedna.com"
+    # Customer Workspace domains allowed to use Google sign-in. Invite-only:
+    # the person must already have an account. Empty for now.
+    google_customer_domains: str = ""
     # Jira (VMS support cases) — optional; the ticket sync is off without a token.
     # Put these in backend/.env, never in code.
     jira_base_url: str = ""
@@ -34,6 +43,14 @@ class Settings(BaseSettings):
     jira_api_token: str = ""
     jira_project: str = "DSD"
     jira_customer_field: str = "customfield_10047"  # "Customer" picklist: {"value": "Name|<option id>"}
+
+    @property
+    def staff_google_domains(self) -> set[str]:
+        return {d.strip().lower() for d in self.google_staff_domains.split(",") if d.strip()}
+
+    @property
+    def customer_google_domains(self) -> set[str]:
+        return {d.strip().lower() for d in self.google_customer_domains.split(",") if d.strip()}
 
     @property
     def allowed_origins(self) -> list[str]:
