@@ -8,17 +8,19 @@ from slowapi.util import get_remote_address
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.models.org_structure import Department
 from app.models.user import Organisation, User
 from app.schemas.auth import (
-    AcceptInviteRequest, ChangePasswordRequest, ForgotPasswordRequest, InviteInfo, LoginRequest,
+    AcceptInviteRequest, ChangePasswordRequest, ForgotPasswordRequest, GoogleSignInRequest, InviteInfo, LoginRequest,
     ResetPasswordRequest, TokenData, TokenResponse,
 )
 from app.schemas.user import UserOut
 from app.services.auth import authenticate_user, create_access_token, hash_password, verify_password
 from app.services.deps import current_user
 from app.services.email import send_password_reset_email
+from app.services.google_sign_in import user_for_google, verify_google_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
@@ -141,5 +143,22 @@ async def reset_password(request: Request, body: ResetPasswordRequest, db: Async
     user.reset_token_hash = None
     user.reset_token_expires_at = None
     await db.commit()
+    token = create_access_token(TokenData(user_id=user.id, org_id=user.org_id))
+    return TokenResponse(access_token=token)
+
+
+@router.get("/config")
+async def auth_config():
+    """What the sign-in page offers. Public: the Google client ID isn't secret."""
+    return {"google_client_id": settings.google_client_id or None}
+
+
+@router.post("/google", response_model=TokenResponse)
+@limiter.limit("10/minute")
+async def google_sign_in(request: Request, body: GoogleSignInRequest, db: AsyncSession = Depends(get_db)):
+    if not settings.google_client_id:
+        raise HTTPException(status_code=404, detail="Google sign-in isn't switched on.")
+    claims = await verify_google_token(body.credential)
+    user = await user_for_google(db, claims)
     token = create_access_token(TokenData(user_id=user.id, org_id=user.org_id))
     return TokenResponse(access_token=token)

@@ -11,6 +11,8 @@ export const authApi = {
     client.post<{ access_token: string }>('/auth/accept-invite', { token, password }),
   changePassword: (current_password: string, new_password: string) =>
     client.post('/auth/change-password', { current_password, new_password }),
+  config: () => client.get<{ google_client_id: string | null }>('/auth/config'),
+  google: (credential: string) => client.post<{ access_token: string }>('/auth/google', { credential }),
   forgotPassword: (email: string) => client.post('/auth/forgot-password', { email }),
   checkReset: (token: string) => client.get(`/auth/reset-password/${encodeURIComponent(token)}`),
   resetPassword: (token: string, password: string) =>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { authApi } from '@/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -11,21 +12,74 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
+// Back to where sign-in was asked for (only same-site paths)
+function goBack() {
+  const back = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
+    ? route.query.redirect : '/home'
+  router.push(back)
+}
+
 async function submit() {
   error.value = ''
   loading.value = true
   try {
     await auth.login(email.value, password.value)
-    // Back to where sign-in was asked for (only same-site paths)
-    const back = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
-      ? route.query.redirect : '/home'
-    router.push(back)
+    goBack()
   } catch {
     error.value = 'Invalid email or password.'
   } finally {
     loading.value = false
   }
 }
+
+// Google sign-in: shown only when the server has a Google client ID.
+// Sedna staff use their sedna.com Google account; invited customers can
+// too once their company's domain is switched on.
+const googleReady = ref(false)
+const googleButton = ref<HTMLElement | null>(null)
+
+function loadGoogleScript(): Promise<void> {
+  if ((window as any).google?.accounts?.id) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const tag = document.createElement('script')
+    tag.src = 'https://accounts.google.com/gsi/client'
+    tag.async = true
+    tag.onload = () => resolve()
+    tag.onerror = () => reject()
+    document.head.appendChild(tag)
+  })
+}
+
+async function onGoogleCredential(response: { credential: string }) {
+  error.value = ''
+  loading.value = true
+  try {
+    await auth.googleSignIn(response.credential)
+    goBack()
+  } catch (err: any) {
+    const d = err?.response?.data?.detail
+    error.value = typeof d === 'string' ? d : "Google sign-in didn't work. Try again."
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  try {
+    const clientId = (await authApi.config()).data.google_client_id
+    if (!clientId) return
+    await loadGoogleScript()
+    const google = (window as any).google
+    google.accounts.id.initialize({ client_id: clientId, callback: onGoogleCredential })
+    googleReady.value = true
+    await nextTick()
+    google.accounts.id.renderButton(googleButton.value, {
+      theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', width: 360,
+    })
+  } catch {
+    // No Google sign-in (not configured or blocked): the password form still works
+  }
+})
 
 // Carry the typed email over without putting it in the URL
 function forgot() {
@@ -45,6 +99,11 @@ function forgot() {
 
       <h1 class="login-heading">Welcome back</h1>
       <p class="login-caption">Sign in to continue learning</p>
+
+      <template v-if="googleReady">
+        <div ref="googleButton" class="google-btn" />
+        <div class="divider"><span>or sign in with email</span></div>
+      </template>
 
       <form @submit.prevent="submit" class="login-form" novalidate>
         <div class="field">
@@ -106,6 +165,9 @@ function forgot() {
 .field { display: flex; flex-direction: column; gap: 6px; }
 .label { font-size: 14px; color: var(--text-secondary); }
 .label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.google-btn { display: flex; justify-content: center; min-height: 44px; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; font-size: 13px; color: var(--text-muted); }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
 .forgot-link { font-size: 14px; color: var(--purple); }
 .forgot-link:hover { text-decoration: underline; }
 .error-msg { font-size: 14px; color: var(--coral); background: var(--coral-bg); padding: 10px 14px; border-radius: var(--radius-sm); }
